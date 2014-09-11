@@ -40,7 +40,8 @@ class Song(Base):
                 'album': self.album,
                 'length': self.length,
                 'path': self.path,
-                'tracknumber': self.tracknumber}
+                'tracknumber': self.tracknumber,
+                'art_uri': 'http://4.bp.blogspot.com/-3n7yrHpYsfw/TZtqsQMtHwI/AAAAAAAAG6o/RY4-sDUGFuA/s1600/album-light-up-night.jpg'}
 
     def play_count(self):
         session = Session()
