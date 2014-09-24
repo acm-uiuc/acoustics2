@@ -5,6 +5,7 @@ from sqlalchemy import ForeignKey
 from sqlalchemy.orm import sessionmaker, relationship
 from sqlalchemy.pool import NullPool
 from config import config
+import art
 import datetime
 
 DATABASE_URL = config.get('Database', 'url')
@@ -46,6 +47,7 @@ class Song(Base):
             'length': self.length,
             'path': self.path,
             'tracknumber': self.tracknumber,
+            'art_uri': art.index_art(self.path)
         }
 
     def play_count(self):
