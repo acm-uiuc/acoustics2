@@ -137,11 +137,9 @@ def add_songs_in_dir(path, store_checksum=False):
                             int(song.tags['tracknumber'][0]))
                 except Exception:
                     song_obj['tracknumber'] = None
-
                 # Album art added on indexing
                 if not art.get_art(song_obj['artist'], song_obj['album']):
                     art.index_art(song_obj)
-
                 print 'Added: ' + filepath
                 conn.execute(table.insert().values(song_obj))
                 num_songs += 1
