@@ -151,7 +151,8 @@ def search_songs(query, limit=20):
         res = session.query(Song).filter(or_(
             Song.title.like('%' + query + '%'),
             Song.artist.like('%' + query + '%'),
-            Song.album.like('%' + query + '%')
+            Song.album.like('%' + query + '%'),
+            Song.path.like('%' + query + '%')
         )).limit(limit).all()
         session.commit()
         songs = [song.dictify() for song in res]
