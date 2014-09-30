@@ -219,6 +219,8 @@ function($scope, $http, $interval, $cookies)
     $scope.formPassword = '';
     $scope.showYouTubeDialog = false;
     $scope.formYouTubeURL = '';
+    $scope.showPlaylistDialog = false;
+    $scope.formPlaylistName = '';
 
     $scope.loggedIn = null;
     $scope.playlist = [];
@@ -320,7 +322,7 @@ function($scope, $http, $interval, $cookies)
 
     $scope.isShowingDialog = function()
     {
-        return $scope.showLoginDialog || $scope.showYouTubeDialog || !!$scope.errorMessage;
+        return $scope.showLoginDialog || $scope.showYouTubeDialog || $scope.showPlaylistDialog || !!$scope.errorMessage;
     };
 
     $scope.startYouTubeDialog = function()
@@ -338,6 +340,23 @@ function($scope, $http, $interval, $cookies)
     {
         $scope.showYouTubeDialog = false;
     };
+
+    $scope.startPlaylistDialog = function()
+    {
+        if (!$scope.ensureLogin())
+        {
+            return;
+        }
+        $scope.formPlaylistName = '';
+        $scope.showPlaylistDialog = false;
+        $scope.playlistFocus = true;
+    }
+
+    $scope.hidePlaylistDialog = function()
+    {
+        $scope.formPlaylistName = '';
+        $scope.showPlaylistDialog = false;
+    }
 
     $scope.hideLoginDialog = function()
     {
@@ -538,6 +557,43 @@ function($scope, $http, $interval, $cookies)
         });
     }
 
+    $scope.loadPlaylist = function(playlist)
+    {
+        if (!id)  {
+            $scope.randomSongs(); //todo: should clear the song list instead
+            return; 
+        }
+        $http.get(backendBase + '/v1/playlists/' + playlist.id)
+        .success(function(data)
+        {
+            var songs = [];
+            for (var resultIndex = 0; resultIndex < data.songs.length; resultIndex++)
+            {
+                var result = data.songs[resultIndex];
+                songs[resultIndex] = result;
+            }
+            $scope.playlist = songs;
+            $scope.layout = 'songlist';
+            $scope.searchText = '';
+        }
+    }
+
+    $scope.refreshPlaylists()
+    {
+        $scope.userRequest(backendBase + '/v1/playlists')
+        .success(function(data)
+        {
+            var playlists = [];
+            for (var resultIndex = 0; resultIndex < data.playlists.length; resultIndex++)
+            {
+                var result = data.playlists[resultIndex];
+                playlists[resultIndex] = result;
+            }
+            $scope.playlists = playlists;
+        });
+    }
+    }
+
     $scope.voteSong = function(song)
     {
         if (!$scope.isSongVotable(song))
@@ -569,6 +625,16 @@ function($scope, $http, $interval, $cookies)
         $scope.userRequest('/v1/queue/add', 'url=' + encodeURIComponent(url));
 
     };
+
+    $scope.createPlaylist = function(name)
+    {
+        $scope.hidePlaylistDialog();
+        if (!$scope.ensureLogin()) {
+            return;
+        }
+
+        $scope.userRequest('/v1/playlists/add', 'name=' encodeURIComponent(name));
+    }
 
     $scope.pauseSong = function()
     {
@@ -611,6 +677,7 @@ function($scope, $http, $interval, $cookies)
         if ($scope.loggedIn)
         {
             params['user'] = $scope.loggedIn['name'];
+            $scope.refreshPlaylists()
         }
         $http.get(backendBase + '/v1/queue',
         {
