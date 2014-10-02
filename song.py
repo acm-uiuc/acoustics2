@@ -14,7 +14,6 @@ from sqlalchemy.sql.expression import or_, func
 PLAYER_NAME = config.get('Player', 'player_name')
 ART_DIR = config.get('Artwork', 'art_path')
 
-
 def remove_songs_in_dir(path):
     session = Session()
     session.query(Song).filter(Song.path.like(path + '%')).delete(
@@ -62,7 +61,6 @@ def _prune_dir(path, prune_modified=False):
 
     session.commit()
     return remaining_paths
-
 
 def add_songs_in_dir(path, store_checksum=False):
     """Update database to reflect the contents of the given directory.
@@ -120,8 +118,6 @@ def add_songs_in_dir(path, store_checksum=False):
                 if store_checksum:
                     with open(filepath, 'rb') as song_file:
                         song_obj['checksum'] = md5_for_file(song_file)
-                else:
-                    song_obj['checksum'] = None
 
                 try: # Album optional for singles
                     if ext in {'.m4a', '.mp4'}:
@@ -131,7 +127,7 @@ def add_songs_in_dir(path, store_checksum=False):
                 except Exception:
                     song_obj['album'] = None
 
-                try:  # Track number optional
+                try: # Track number optional
                     if ext in {'.m4a', '.mp4'}:
                         song_obj['tracknumber'] = song.tags['trkn'][0][0]
                     else:
@@ -139,8 +135,10 @@ def add_songs_in_dir(path, store_checksum=False):
                             int(song.tags['tracknumber'][0]))
                 except Exception:
                     song_obj['tracknumber'] = None
+
                 if not art.get_art(song_obj['artist'], song_obj['album']):
                     art.index_art(song_obj)
+
                 print 'Added: ' + filepath
                 conn.execute(table.insert().values(song_obj))
                 num_songs += 1
