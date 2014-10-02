@@ -64,11 +64,7 @@ def _prune_dir(path, prune_modified=False):
     return remaining_paths
 
 
-<<<<<<< HEAD
 def add_songs_in_dir(path, store_checksum=False):
-=======
-def add_songs_in_dir(path, store_checksum=True):
->>>>>>> 605c41c... remade album art based on file path, not directory
     """Update database to reflect the contents of the given directory.
 
     store_checksum: Whether or not to store an MD5 file checksum in order to
@@ -143,15 +139,8 @@ def add_songs_in_dir(path, store_checksum=True):
                             int(song.tags['tracknumber'][0]))
                 except Exception:
                     song_obj['tracknumber'] = None
-                # Album art added on indexing
-<<<<<<< HEAD
                 if not art.get_art(song_obj['artist'], song_obj['album']):
                     art.index_art(song_obj)
-=======
-                if not isfile(art.get_art(song_obj['checksum'])):
-                    art.index_art(song_obj)
-
->>>>>>> 605c41c... remade album art based on file path, not directory
                 print 'Added: ' + filepath
                 conn.execute(table.insert().values(song_obj))
                 num_songs += 1

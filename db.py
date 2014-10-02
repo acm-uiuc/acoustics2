@@ -46,12 +46,8 @@ class Song(Base):
             'length': self.length,
             'path': self.path,
             'tracknumber': self.tracknumber,
-<<<<<<< HEAD
             'play_count': self.play_count(),
             'art_uri': art.get_art(self.artist, self.album),
-=======
-            'art_uri': art.get_art(self.checksum),
->>>>>>> 605c41c... remade album art based on file path, not directory
         }
 
     def play_count(self):
@@ -117,8 +113,6 @@ class Vote(Base):
                        primary_key=True)
     user = Column(String(8), primary_key=True)
 
-<<<<<<< HEAD
-=======
 
 class Playlist(Base):
     __tablename__ = 'playlists'
@@ -140,7 +134,6 @@ class PlaylistItem(Base):
     __table_args__ = (UniqueConstraint('playlist_id', 'song_id'),)
 
 
->>>>>>> 605c41c... remade album art based on file path, not directory
 def init_db():
     Base.metadata.create_all(engine)
 
