@@ -22,22 +22,24 @@ def index_art(song):
 
     art_uri = ''
     if ext == '.mp3':
-        art_uri = index_mp3_art(path)
+        art_uri = index_mp3_art(song)
     elif ext == '.flac':
-        art_uri = index_flac_art(path)
+        art_uri = index_flac_art(song)
 
     return art_uri
 
+
 def index_mp3_art(song):
     try:
-        tags = MP3(song)
+        tags = MP3(song['path'])
     except:
         return None
 
 
+
 def index_flac_art(song):
     try:
-        tags = FLAC(song)
+        tags = FLAC(song['path'])
     except:
         return False
     data = ''
@@ -58,7 +60,8 @@ def write_art(song, data):
 
     return path
 
-def write_art(path, data):
+
+def write_art(song, data):
     if not data:
         directory = find_art(song)
         if directory:
