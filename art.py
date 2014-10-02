@@ -1,12 +1,19 @@
+<<<<<<< HEAD
 from os import path, listdir
 from mutagen.mp3 import MP3
 from mutagen.flac import FLAC
 from mutagen.mp4 import MP4, MP4Tags, MP4Cover
+=======
+from os.path import join, splitext
+from mutagen.mp3 import MP3
+from mutagen.flac import FLAC
+>>>>>>> 605c41c... remade album art based on file path, not directory
 from config import config
 import imghdr
 
 ART_DIR = config.get('Artwork', 'art_path')
 
+<<<<<<< HEAD
 def index_art(song):
     ext = path.splitext(song['path'])[1]
 
@@ -19,9 +26,36 @@ def index_art(song):
             tags = MP4(song['path']).tags
         else:
             return None
+=======
+
+def index_art(song):
+    ext = splitext(song['path'])[1]
+
+    art_uri = ''
+    if ext == '.mp3':
+        art_uri = index_mp3_art(song)
+    elif ext == '.flac':
+        art_uri = index_flac_art(song)
+
+    return art_uri
+
+
+def index_mp3_art(song):
+    try:
+        tags = MP3(song['path'])
+>>>>>>> 605c41c... remade album art based on file path, not directory
     except:
         return None
 
+<<<<<<< HEAD
+=======
+
+def index_flac_art(song):
+    try:
+        tags = FLAC(song['path'])
+    except:
+        return False
+>>>>>>> 605c41c... remade album art based on file path, not directory
     data = ''
 
     if isinstance(tags, FLAC) and tags.pictures:
@@ -34,6 +68,11 @@ def index_art(song):
     elif isinstance(tags, MP4Tags) and tags['covr']:
         data = tags['covr'][0]
 
+<<<<<<< HEAD
+=======
+
+def write_art(song, data):
+>>>>>>> 605c41c... remade album art based on file path, not directory
     if not data:
         directory = find_art(song)
         if directory:
@@ -67,6 +106,7 @@ def write_art(song, data):
     if not data or not song['artist'] or not song['album']:
         return None
 
+<<<<<<< HEAD
     image_type = imghdr.what(None, data)
     ext = ''
 
@@ -74,6 +114,9 @@ def write_art(song, data):
         ext = '.jpg'
     elif image_type == 'png':
         ext = '.png'
+=======
+    filepath = get_art(song['checksum'])
+>>>>>>> 605c41c... remade album art based on file path, not directory
 
     title = u"{0} - {1}".format(song['artist'], song['album'])
     folder = sanitize_folder_name(title)
@@ -83,6 +126,7 @@ def write_art(song, data):
     out.close()
 
 
+<<<<<<< HEAD
 def get_art(artist, album):
     if not album or not artist:
         return None
@@ -96,6 +140,12 @@ def get_art(artist, album):
             return '.' + ART_DIR + folder + e
 
     return None
+=======
+def get_art(checksum):
+    if not checksum:
+        return None
+    filepath = join('.' + ART_DIR + checksum + ".jpg")
+>>>>>>> 605c41c... remade album art based on file path, not directory
 
 def sanitize_folder_name(name):
     keepcharacters = (' ','.','_','-')
