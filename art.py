@@ -33,8 +33,25 @@ def index_mp3_art(song):
     try:
         tags = MP3(song['path'])
     except:
-        return None
+        return False
+    data = ''
+    mime = ''
+    for tag in tags:
+        if tag.startswith('APIC'):
+            data = tags[tag].data
+            mime = tags[tag].mime
+            break
+    if not data:
+        path = find_art(song)
+        if path:
+            print 'ext. art at ' + path
+            afile = open(path, 'r')
+            data = afile.read()
+            mime = guess_type(path)
 
+    path = write_art(song, data, mime)
+
+    return path
 
 
 def index_flac_art(song):
@@ -56,12 +73,36 @@ def index_flac_art(song):
 
 
 def write_art(song, data):
-    path = write_art(song, data)
+    mime = ''
+    if tags.pictures:
+        data = tags.pictures[0].data
+        mime = tags.pictures[0].mime
+    else:
+        path = find_art(song)
+        if path:
+            afile = open(path, 'r')
+            data = afile.read()
+            mime = guess_type(path)
+
+    path = write_art(song, data, mime)
 
     return path
 
+def find_art(song):
+    art_strings = ['cover.jpg', 'cover.png', 'folder.jpg', 'folder.png']
+    path = dirname(song['path'])
+    for s in art_strings:
+        if isfile(join(path, s)):
+            return join(path, s)
 
-def write_art(song, data):
+    for f in listdir(path):
+        if f.endswith(".jpg") or f.endswith(".png"):
+            return join(path, f)
+
+    return ""
+
+
+def write_art(song, data, mime):
     if not data:
         directory = find_art(song)
         if directory:
@@ -94,6 +135,13 @@ def find_art(song):
 def write_art(song, data):
     if not data or not song['artist'] or not song['album']:
         return None
+    ext = ''
+    if mime == 'image/png':
+        ext = 'png'
+    elif mime == 'image/jpeg':
+        ext = 'jpg'
+    else:
+        ext = 'jpg'
 
     image_type = imghdr.what(None, data)
     ext = ''
