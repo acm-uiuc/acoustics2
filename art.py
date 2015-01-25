@@ -1,7 +1,9 @@
-from os.path import join, splitext
+from os import listdir
+from os.path import join, splitext, dirname, isfile
 from mutagen.mp3 import MP3
 from mutagen.flac import FLAC
 from config import config
+from mimetypes import guess_type
 
 ART_DIR = config.get('Artwork', 'art_path')
 
@@ -24,12 +26,21 @@ def index_mp3_art(song):
     except:
         return False
     data = ''
+    mime = ''
     for tag in tags:
         if tag.startswith('APIC'):
             data = tags[tag].data
+            mime = tags[tag].mime
             break
+    if not data:
+        path = find_art(song)
+        if path:
+            print 'ext. art at ' + path
+            afile = open(path, 'r')
+            data = afile.read()
+            mime = guess_type(path)
 
-    path = write_art(song, data)
+    path = write_art(song, data, mime)
 
     return path
 
@@ -40,19 +51,47 @@ def index_flac_art(song):
     except:
         return False
     data = ''
-    if tags.pictures[0].data:
+    mime = ''
+    if tags.pictures:
         data = tags.pictures[0].data
+        mime = tags.pictures[0].mime
+    else:
+        path = find_art(song)
+        if path:
+            afile = open(path, 'r')
+            data = afile.read()
+            mime = guess_type(path)
 
-    path = write_art(song, data)
+    path = write_art(song, data, mime)
 
     return path
 
+def find_art(song):
+    art_strings = ['cover.jpg', 'cover.png', 'folder.jpg', 'folder.png']
+    path = dirname(song['path'])
+    for s in art_strings:
+        if isfile(join(path, s)):
+            return join(path, s)
 
-def write_art(song, data):
+    for f in listdir(path):
+        if f.endswith(".jpg") or f.endswith(".png"):
+            return join(path, f)
+
+    return ""
+
+
+def write_art(song, data, mime):
     if not data:
         return None
+    ext = ''
+    if mime == 'image/png':
+        ext = 'png'
+    elif mime == 'image/jpeg':
+        ext = 'jpg'
+    else:
+        ext = 'jpg'
 
-    filepath = get_art(song['checksum'])
+    filepath = join('.' + ART_DIR + song['checksum'] + "." + ext)
 
     out = open(filepath, 'w')
     out.write(data)
@@ -62,6 +101,9 @@ def write_art(song, data):
 def get_art(checksum):
     if not checksum:
         return None
-    filepath = join('.' + ART_DIR + checksum + ".jpg")
+    filepath = join(checksum)
+    for f in listdir('.' + ART_DIR):
+        if f.startswith(filepath):
+            return '.' + ART_DIR + f;
 
-    return filepath
+    return ""
