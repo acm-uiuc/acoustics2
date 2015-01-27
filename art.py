@@ -1,9 +1,5 @@
-<<<<<<< HEAD
-from os.path import join, splitext, isfile
-=======
 from os import listdir
 from os.path import join, splitext, dirname, isfile
->>>>>>> album_art
 from mutagen.mp3 import MP3
 from mutagen.flac import FLAC
 from config import config
@@ -68,10 +64,6 @@ def index_flac_art(song):
 
     return path
 
-<<<<<<< HEAD
-
-def write_art(song, data):
-=======
 def find_art(song):
     art_strings = ['cover.jpg', 'cover.png', 'folder.jpg', 'folder.png']
     path = dirname(song['path'])
@@ -87,7 +79,6 @@ def find_art(song):
 
 
 def write_art(song, data, mime):
->>>>>>> album_art
     if not data:
         return None
     ext = ''
@@ -98,11 +89,7 @@ def write_art(song, data, mime):
     else:
         ext = 'jpg'
 
-<<<<<<< HEAD
-    filepath = get_art(song['checksum'])
-=======
     filepath = join('.' + ART_DIR + song['checksum'] + "." + ext)
->>>>>>> album_art
 
     out = open(filepath, 'w')
     out.write(data)
@@ -112,23 +99,10 @@ def write_art(song, data, mime):
 def get_art(checksum):
     if not checksum:
         return None
-<<<<<<< HEAD
-    filepath = join('.' + ART_DIR + checksum + ".jpg")
 
-    return filepath
-
-
-def find_art(checksum):
-    path = get_art(checksum)
-
-    if isfile(path):
-        return path
-    return None
-=======
     filepath = join(checksum)
     for f in listdir('.' + ART_DIR):
         if f.startswith(filepath):
             return '.' + ART_DIR + f;
 
     return ""
->>>>>>> album_art
