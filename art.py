@@ -21,30 +21,6 @@ def index_art(song):
             return None
 
     data = ''
-    mime = ''
-    for tag in tags:
-        if tag.startswith('APIC'):
-            data = tags[tag].data
-            mime = tags[tag].mime
-            break
-    if not data:
-        path = find_art(song)
-        if path:
-            afile = open(path, 'r')
-            data = afile.read()
-            mime = guess_type(path)
-
-    path = write_art(song, data, mime)
-
-    return path
-
-
-def index_flac_art(song):
-    try:
-        tags = FLAC(song['path'])
-    except:
-        return False
-    data = ''
 
     if isinstance(tags, FLAC) and tags.pictures:
         data = tags.pictures[0].data
@@ -57,37 +33,6 @@ def index_flac_art(song):
         data = tags['covr'][0]
 
 
-def write_art(song, data):
-    mime = ''
-    if tags.pictures:
-        data = tags.pictures[0].data
-        mime = tags.pictures[0].mime
-    else:
-        path = find_art(song)
-        if path:
-            afile = open(path, 'r')
-            data = afile.read()
-            mime = guess_type(path)
-
-    path = write_art(song, data, mime)
-
-    return path
-
-def find_art(song):
-    art_strings = ['cover.jpg', 'cover.png', 'folder.jpg', 'folder.png']
-    path = dirname(song['path'])
-    for s in art_strings:
-        if isfile(join(path, s)):
-            return join(path, s)
-
-    for f in listdir(path):
-        if f.endswith(".jpg") or f.endswith(".png"):
-            return join(path, f)
-
-    return ""
-
-
-def write_art(song, data, mime):
     if not data:
         directory = find_art(song)
         if directory:
@@ -139,19 +84,11 @@ def write_art(song, data):
 def get_art(artist, album):
     if not album or not artist:
         return None
-    ext = ['.jpg', '.png']
 
-<<<<<<< HEAD
     name = u"{0} - {1}".format(artist, album)
     folder = sanitize_folder_name(name)
-=======
     ext = ['.jpg', '.png']
 
-    filepath = join(checksum)
-    for e in ext:
-        if isfile('.' + ART_DIR + checksum + e):
-            return '.' + ART_DIR + checksum + e;
->>>>>>> 3a16b5d... slightly more efficient art getting
 
     for e in ext:
         if path.isfile('.' + ART_DIR + folder + e):
