@@ -32,7 +32,6 @@ def index_art(song):
     elif isinstance(tags, MP4Tags) and tags['covr']:
         data = tags['covr'][0]
 
-
     if not data:
         directory = find_art(song)
         if directory:
@@ -54,6 +53,7 @@ def find_art(song):
         if path.isfile(path.join(directory, s)):
             return path.join(directory, s)
 
+<<<<<<< HEAD
     for f in listdir(directory):
         ext = path.splitext(f)[1]
         if ext == '.jpg' or ext == '.png':
