@@ -132,13 +132,6 @@ def find_art(song):
 def write_art(song, data):
     if not data or not song['artist'] or not song['album']:
         return None
-    ext = ''
-    if mime == 'image/png':
-        ext = 'png'
-    elif mime == 'image/jpeg':
-        ext = 'jpg'
-    else:
-        ext = 'jpg'
 
     image_type = imghdr.what(None, data)
     ext = ''
