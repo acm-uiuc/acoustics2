@@ -211,7 +211,7 @@ function($scope, $http, $interval, $cookies)
     // Data
     //
 
-    var backendBase = '/beats/1104'
+    var backendBase = '/beats/1104';
     var authentication = true;
 
     $scope.showLoginDialog = false;
@@ -575,10 +575,10 @@ function($scope, $http, $interval, $cookies)
             $scope.playlist = songs;
             $scope.layout = 'songlist';
             $scope.searchText = '';
-        }
+        });
     }
 
-    $scope.refreshPlaylists()
+    $scope.refreshPlaylists = function()
     {
         $scope.userRequest(backendBase + '/v1/playlists')
         .success(function(data)
@@ -591,7 +591,6 @@ function($scope, $http, $interval, $cookies)
             }
             $scope.playlists = playlists;
         });
-    }
     }
 
     $scope.voteSong = function(song)
@@ -633,8 +632,8 @@ function($scope, $http, $interval, $cookies)
             return;
         }
 
-        $scope.userRequest('/v1/playlists/add', 'name=' encodeURIComponent(name));
-    }
+        $scope.userRequest('/v1/playlists/add', 'name=' + encodeURIComponent(name));
+    };
 
     $scope.pauseSong = function()
     {
