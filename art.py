@@ -68,11 +68,12 @@ def write_art(song, data):
 
     image_type = imghdr.what(None, data)
     ext = ''
-
     if image_type == 'jpeg':
         ext = '.jpg'
     elif image_type == 'png':
         ext = '.png'
+
+    filepath = "{0}/{1}-{2}.{3}".format(artist, album, ext)
 
     title = u"{0} - {1}".format(song['artist'], song['album'])
     folder = sanitize_folder_name(title)
