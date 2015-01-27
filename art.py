@@ -79,7 +79,7 @@ def find_art(song):
 
 
 def write_art(song, data, mime):
-    if not data:
+    if not data or not song['artist'] or not song['album']:
         return None
     ext = ''
     if mime == 'image/png':
@@ -89,22 +89,22 @@ def write_art(song, data, mime):
     else:
         ext = 'jpg'
 
-    filepath = join('.' + ART_DIR + song['checksum'] + "." + ext)
+    filepath = '.' + ART_DIR + song['artist'] + " - " + song['album'] +  "." + ext
 
     out = open(filepath, 'w')
     out.write(data)
     out.close()
 
 
-def get_art(checksum):
-    if not checksum:
+def get_art(artist, album):
+    if not album or not artist:
         return None
 
     ext = ['.jpg', '.png']
+    name = artist + " - " + album;
 
-    filepath = join(checksum)
     for e in ext:
-        if isfile('.' + ART_DIR + checksum + e):
-            return '.' + ART_DIR + checksum + e;
+        if isfile('.' + ART_DIR + name + e):
+            return '.' + ART_DIR + name + e
 
     return ""
