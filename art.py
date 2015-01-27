@@ -1,5 +1,5 @@
-from os import listdir
-from os.path import join, splitext, dirname, isfile
+from os import path
+from os.path import isfile
 from mutagen.mp3 import MP3
 from mutagen.flac import FLAC
 from config import config
@@ -24,10 +24,11 @@ def index_art(song):
 
     if tags.pictures:
         data = tags.pictures[0]
-    elif for tag in tags:
-        if tag.startswith('APIC'):
-            data = tags[tag].data
-            break
+    else:
+        for tag in tags:
+            if tag.startswith('APIC'):
+                data = tags[tag].data
+                break
 
     if not data:
         path = find_art(song)
@@ -52,7 +53,7 @@ def find_art(song):
 
     for f in listdir(path):
         ext = splitext(f)[1]
-        if ext == 'jpg' or ext == 'png'
+        if ext == 'jpg' or ext == 'png':
             return join(path, f)
 
     return ""
