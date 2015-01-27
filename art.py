@@ -56,7 +56,7 @@ def find_art(song):
         if ext == 'jpg' or ext == 'png':
             return join(path, f)
 
-    return ""
+    return None
 
 
 def write_art(song, data):
