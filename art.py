@@ -20,18 +20,6 @@ def index_art(song):
         else:
             return None
 
-    art_uri = ''
-    if ext == '.mp3':
-        art_uri = index_mp3_art(song)
-    elif ext == '.flac':
-        art_uri = index_flac_art(song)
-
-
-def index_mp3_art(song):
-    try:
-        tags = MP3(song['path'])
-    except:
-        return False
     data = ''
     mime = ''
     for tag in tags:
@@ -153,8 +141,17 @@ def get_art(artist, album):
         return None
     ext = ['.jpg', '.png']
 
+<<<<<<< HEAD
     name = u"{0} - {1}".format(artist, album)
     folder = sanitize_folder_name(name)
+=======
+    ext = ['.jpg', '.png']
+
+    filepath = join(checksum)
+    for e in ext:
+        if isfile('.' + ART_DIR + checksum + e):
+            return '.' + ART_DIR + checksum + e;
+>>>>>>> 3a16b5d... slightly more efficient art getting
 
     for e in ext:
         if path.isfile('.' + ART_DIR + folder + e):
