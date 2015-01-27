@@ -3,66 +3,45 @@ from os.path import join, splitext, dirname, isfile
 from mutagen.mp3 import MP3
 from mutagen.flac import FLAC
 from config import config
-from mimetypes import guess_type
 
 ART_DIR = config.get('Artwork', 'art_path')
-
 
 def index_art(song):
     ext = splitext(song['path'])[1]
 
-    art_uri = ''
-    if ext == '.mp3':
-        art_uri = index_mp3_art(song)
-    elif ext == '.flac':
-        art_uri = index_flac_art(song)
-
-
-
-def index_mp3_art(song):
     try:
-        tags = MP3(song['path'])
+        if ext == 'mp3':
+            tags = MP3(song['path'])
+        elif ext == 'flac':
+            tags = FLAC(song['path'])
+        else:
+            return None
     except:
-        return False
+        return None
+
     data = ''
-    mime = ''
-    for tag in tags:
+    kind = ''
+
+    if tags.pictures:
+        data = tags.pictures[0]
+    elif for tag in tags:
         if tag.startswith('APIC'):
             data = tags[tag].data
-            mime = tags[tag].mime
             break
+
     if not data:
         path = find_art(song)
         if path:
-            afile = open(path, 'r')
-            data = afile.read()
-            mime = guess_type(path)
+            try:
+                afile = open(path, 'r')
+                data = afile.read()
+                close(afile)
+            except IOError:
+                return None
+        else:
+            return None
 
-    path = write_art(song, data, mime)
-
-    return path
-
-
-def index_flac_art(song):
-    try:
-        tags = FLAC(song['path'])
-    except:
-        return False
-    data = ''
-    mime = ''
-    if tags.pictures:
-        data = tags.pictures[0].data
-        mime = tags.pictures[0].mime
-    else:
-        path = find_art(song)
-        if path:
-            afile = open(path, 'r')
-            data = afile.read()
-            mime = guess_type(path)
-
-    path = write_art(song, data, mime)
-
-    return path
+    path = write_art(song, data)
 
 def find_art(song):
     art_strings = ['cover.jpg', 'cover.png', 'folder.jpg', 'folder.png']
@@ -72,24 +51,26 @@ def find_art(song):
             return join(path, s)
 
     for f in listdir(path):
-        if f.endswith(".jpg") or f.endswith(".png"):
+        ext = splitext(f)[1]
+        if ext == 'jpg' or ext == 'png'
             return join(path, f)
 
     return ""
 
 
-def write_art(song, data, mime):
+def write_art(song, data):
     if not data or not song['artist'] or not song['album']:
         return None
-    ext = ''
-    if mime == 'image/png':
-        ext = 'png'
-    elif mime == 'image/jpeg':
-        ext = 'jpg'
-    else:
-        ext = 'jpg'
 
-    filepath = '.' + ART_DIR + song['artist'] + " - " + song['album'] +  "." + ext
+    image_type = imghdr.what(None, data)
+    ext = ''
+
+    if image_type == 'jpeg':
+        ext = 'jpg'
+    elif image_type == 'png':
+        ext = 'png'
+
+    filepath = "{0}/{1}-{2}.{3}".format(artist, album, ext)
 
     out = open(filepath, 'w')
     out.write(data)
@@ -107,4 +88,4 @@ def get_art(artist, album):
         if isfile('.' + ART_DIR + name + e):
             return '.' + ART_DIR + name + e
 
-    return ""
+    return None
