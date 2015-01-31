@@ -123,7 +123,7 @@ def add_songs_in_dir(path, store_checksum=True):
                 else:
                     song_obj['checksum'] = None
 
-                try:  # Album optional for singles
+                try: # Album optional for singles
                     if ext in {'.m4a', '.mp4'}:
                         song_obj['album'] = song.tags['\xa9alb'][0]
                     else:
@@ -141,7 +141,7 @@ def add_songs_in_dir(path, store_checksum=True):
                     song_obj['tracknumber'] = None
 
                 # Album art added on indexing
-                if art.get_art(song_obj['artist'], song_obj['album']) == "":
+                if not art.get_art(song_obj['artist'], song_obj['album']):
                     art.index_art(song_obj)
 
                 print 'Added: ' + filepath

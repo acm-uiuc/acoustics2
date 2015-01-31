@@ -3,14 +3,13 @@ from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy import Column, Integer, String, Unicode, Float, DateTime
 from sqlalchemy import ForeignKey, UniqueConstraint
 from sqlalchemy.orm import sessionmaker, relationship
-from sqlalchemy.pool import NullPool
 from config import config
 import art
 import datetime
 
 DATABASE_URL = config.get('Database', 'url')
 
-engine = create_engine(DATABASE_URL, poolclass=NullPool)
+engine = create_engine(DATABASE_URL, max_overflow=-1)
 Session = sessionmaker(bind=engine)
 Base = declarative_base()
 
@@ -24,7 +23,7 @@ class Song(Base):
     artist = Column(Unicode(100))
     album = Column(Unicode(100))
     length = Column(Float)
-    path = Column(Unicode(500))
+    path = Column(Unicode(1000))
     tracknumber = Column(Integer)
 
     # MD5 checksum to verify file integrity
@@ -47,6 +46,7 @@ class Song(Base):
             'length': self.length,
             'path': self.path,
             'tracknumber': self.tracknumber,
+            'play_count': self.play_count(),
             'art_uri': art.get_art(self.artist, self.album),
         }
 
@@ -112,7 +112,6 @@ class Vote(Base):
     packet_id = Column(Integer, ForeignKey('packets.id', ondelete='CASCADE'),
                        primary_key=True)
     user = Column(String(8), primary_key=True)
-
 
 class Playlist(Base):
     __tablename__ = 'playlists'

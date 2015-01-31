@@ -240,7 +240,7 @@ function($scope, $http, $interval, $cookies)
         { title: 'Recently Added', icon: '\uf017', query: '' },
         { title: 'Recently Played', icon: '\uf04b', query: 'play-history' },
         { title: 'Random', icon: '\uf074', query: '' },
-        { title: 'Top 100', icon: '\uf01b', query: 'top-songs:100' },
+        { title: 'Top 50', icon: '\uf01b', query: 'top-songs:50' },
     ];
 
     $scope.playlists =
@@ -436,6 +436,7 @@ function($scope, $http, $interval, $cookies)
     $scope.login = function(username, password)
     {
         $scope.hideLoginDialog();
+        password = encodeURIComponent(password);
         $http.post(backendBase + '/v1/session', 'username=' + username + '&password=' + password,
         {
             headers: { 'Content-Type': 'application/x-www-form-urlencoded' }
