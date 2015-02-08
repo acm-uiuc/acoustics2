@@ -211,7 +211,7 @@ function($scope, $http, $interval, $cookies)
     // Data
     //
 
-    var backendBase = '/beats/1104';
+    var backendBase = '';
     var authentication = true;
 
     $scope.showLoginDialog = false;
@@ -226,6 +226,7 @@ function($scope, $http, $interval, $cookies)
     $scope.playlist = [];
     $scope.albumlist = [];
     $scope.queue = [];
+    $scope.playlist_id = -1;
     $scope.volume = 0;
     $scope.holdVolumeUpdate = false;
     $scope.playbackTime = 0;
@@ -348,7 +349,7 @@ function($scope, $http, $interval, $cookies)
             return;
         }
         $scope.formPlaylistName = '';
-        $scope.showPlaylistDialog = false;
+        $scope.showPlaylistDialog = true;
         $scope.playlistFocus = true;
     }
 
@@ -394,6 +395,17 @@ function($scope, $http, $interval, $cookies)
     {
         // Add the song to the given playlist
         console.log(playlist.title + ' <- ' + song.title);
+
+        $scope.userRequest("/v1/playlists/" + playlist.id + "/add_song", "id=" + song.id );
+    };
+
+    $scope.removeFromPlaylist = function(song)
+    {
+        if(playlist_id == -1) {
+            return;
+        }
+        console.log(song.id);
+        $scope.userRequest("/v1/playlists/" + $scope.playlist_id + "/remove_song", "id=" + song.id );
     };
 
     //
@@ -524,6 +536,7 @@ function($scope, $http, $interval, $cookies)
                 }
                 $scope.albumlist = albums;
                 $scope.layout = 'albumgrid';
+                $scope.playlist_id = -1;
                 $scope.searchText = query;
             }
             else
@@ -536,6 +549,7 @@ function($scope, $http, $interval, $cookies)
                 }
                 $scope.playlist = songs;
                 $scope.layout = 'songlist';
+                $scope.playlist_id = -1;
                 $scope.searchText = query;
             }
         });
@@ -554,17 +568,23 @@ function($scope, $http, $interval, $cookies)
             }
             $scope.playlist = songs;
             $scope.layout = 'songlist';
+            $scope.playlist_id = -1;
             $scope.searchText = '';
         });
     }
 
     $scope.loadPlaylist = function(playlist)
     {
-        if (!id)  {
+        if (!playlist)  {
             $scope.randomSongs(); //todo: should clear the song list instead
             return; 
         }
-        $http.get(backendBase + '/v1/playlists/' + playlist.id)
+        var params = {};
+        params['user'] = $scope.loggedIn['name'];
+        $http.get(backendBase + '/v1/playlists/' + playlist.id,
+        {
+            params: params
+        })
         .success(function(data)
         {
             var songs = [];
@@ -574,14 +594,20 @@ function($scope, $http, $interval, $cookies)
                 songs[resultIndex] = result;
             }
             $scope.playlist = songs;
-            $scope.layout = 'songlist';
+            $scope.layout = 'playlist';
+            $scope.playlist_id = playlist.id;
             $scope.searchText = '';
         });
-    }
+    };
 
     $scope.refreshPlaylists = function()
     {
-        $scope.userRequest(backendBase + '/v1/playlists')
+        var params = {};
+        params['user'] = $scope.loggedIn['name'];
+        $http.get(backendBase + '/v1/playlists',
+        {
+            params: params
+        })
         .success(function(data)
         {
             var playlists = [];
@@ -592,7 +618,7 @@ function($scope, $http, $interval, $cookies)
             }
             $scope.playlists = playlists;
         });
-    }
+    };
 
     $scope.voteSong = function(song)
     {
@@ -636,6 +662,7 @@ function($scope, $http, $interval, $cookies)
         $scope.userRequest('/v1/playlists/add', 'name=' + encodeURIComponent(name));
     };
 
+
     $scope.pauseSong = function()
     {
         $scope.userRequest('/v1/player/pause');
@@ -677,7 +704,7 @@ function($scope, $http, $interval, $cookies)
         if ($scope.loggedIn)
         {
             params['user'] = $scope.loggedIn['name'];
-            $scope.refreshPlaylists()
+            $scope.refreshPlaylists();
         }
         $http.get(backendBase + '/v1/queue',
         {

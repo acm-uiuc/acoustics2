@@ -19,6 +19,8 @@ def index_art(song):
             tags = MP4(song['path']).tags
         else:
             return None
+    except:
+        return None
 
     data = ''
 
@@ -53,7 +55,6 @@ def find_art(song):
         if path.isfile(path.join(directory, s)):
             return path.join(directory, s)
 
-<<<<<<< HEAD
     for f in listdir(directory):
         ext = path.splitext(f)[1]
         if ext == '.jpg' or ext == '.png':
@@ -72,8 +73,6 @@ def write_art(song, data):
         ext = '.jpg'
     elif image_type == 'png':
         ext = '.png'
-
-    filepath = "{0}/{1}-{2}.{3}".format(artist, album, ext)
 
     title = u"{0} - {1}".format(song['artist'], song['album'])
     folder = sanitize_folder_name(title)

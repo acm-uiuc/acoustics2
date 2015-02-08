@@ -205,14 +205,47 @@ def get_playlist(playlist_id):
     except AttributeError:
         return jsonify({'message': 'Playlist does not exist'}), 400
 
+@app.route('/v1/playlists/<int:playlist_id>/add_song', methods=['POST'])
+@crossdomain(origin='*')
+def add_song_to_playlist(playlist_id):
+    token = request.form.get('token')
+    if not AUTHENTICATION_ENABLED:
+        username = TEST_USERNAME
+    else:
+        session = user.get_session(token)
+        username = session.json()['user']['name']
+    if request.form.get('id'):
+        song_id = request.form.get('id')
+        try:
+            return jsonify(playlist.add_song_to_playlist(username, playlist_id, song_id))
+        except AttributeError:
+            return jsonify({'message': 'Playlist does not exist'}), 400
+    return jsonify({'message': 'No id parameter'}), 400
+
+@app.route('/v1/playlists/<int:playlist_id>/remove_song', methods=['POST'])
+@crossdomain(origin='*')
+def remove_song_from_playlist(playlist_id):
+    token = request.form.get('token')
+    if not AUTHENTICATION_ENABLED:
+        username = TEST_USERNAME
+    else:
+        session = user.get_session(token)
+        username = session.json()['user']['name']
+    if request.form.get('id'):
+        song_id = request.form.get('id')
+        try:
+            return jsonify(playlist.remove_song_from_playlist(username, playlist_id, song_id))
+        except AttributeError:
+            return jsonify({'message': 'Playlist does not exist'}), 400
+    return jsonify({'message': 'No id parameter'}), 400
+
 @app.route('/v1/playlists', methods=['GET'])
 @crossdomain(origin='*')
 def get_playlists_for_user():
-    username = request.args.get('user')
-    if username:
+    if request.args.get('user'):
+        username = request.args.get('user')
         return jsonify(playlist.get_playlists_for_user(username))
-    else:
-        return jsonify({'message': 'No user specified'}), 400
+    return jsonify({'message': 'No user specified'}), 400
 
 
 @app.route('/v1/playlists/add', methods=['POST'])

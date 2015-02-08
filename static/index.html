@@ -50,13 +50,13 @@ Source: https://github.com/acm-uiuc/beats
         </form>
       </div>
       <div class="dialog-area top" ng-show="showPlaylistDialog">
-        <form ng-submit="createPlaylist(name)">
+        <form ng-submit="createPlaylist(formPlaylistName)">
           <input name="name" placeholder="Playlist Name" ng-model="formPlaylistName" take-focus="playlistFocus" required />
           <button type="button" class="cancel" title="Cancel" ng-click="hidePlaylistDialog()">
             <span data-icon="&#xf00d;"></span>Cancel
           </button>
-          <button type="submit" class="confirm" title="Login">
-            <span data-icon="&#xf090;"></span>Login
+          <button type="submit" class="confirm" title="Add">
+            <span data-icon="&#xf090;"></span>Add
           </button>
         </form>
       </div>
@@ -85,14 +85,15 @@ Source: https://github.com/acm-uiuc/beats
             </ul>
             <hr />
             <ul class="playlists">
-              <li ng-repeat="playlist in playlists" drop-song="addToPlayList(playlist, song)"><span data-icon="&#xf001;"></span>{{ playlist.title }}</li>
+              <li ng-repeat="playlist in playlists" ng-click="loadPlaylist(playlist)" drop-song="addToPlayList(playlist, song)"><span data-icon="&#xf001;"></span>{{ playlist.name }}</li>
             </ul>
           </div>
         </div>
 
-        <div class="playlist-area" ng-show="layout == 'songlist'">
+        <div class="playlist-area" ng-show="layout == 'songlist' || layout == 'playlist'">
           <table class="playlist">
             <colgroup>
+              <col ng-show="layout == 'playlist'" span="1" style="width: 5%">
               <col span="1" style="width: 5%;">
               <col span="1" style="width: 5%;">
               <col span="1" style="width: 33%;">
@@ -102,10 +103,11 @@ Source: https://github.com/acm-uiuc/beats
               <col span="1" style="width: 6%;">
             </colgroup>
             <thead>
-              <tr><th>Vote</th><th>Track</th><th>Title</th><th>Artist</th><th>Album</th><th>Length</th><th>Plays</th></tr>
+              <tr><th ng-show="layout == 'playlist'"> </th><th>Vote</th><th>Track</th><th>Title</th><th>Artist</th><th>Album</th><th>Length</th><th>Plays</th></tr>
             </thead>
             <tbody>
               <tr ng-repeat="song in playlist track by $index" draggable="true" drag-song="song">
+                <td style="text-align: center" ng-show="layout == 'playlist'" ng-click="removeFromPlaylist(song)"> <span class="cursor-pointer" data-image-icon="&#xf00d;"></span></td>
                 <td style="text-align: center" ng-click="voteSong(song)"><span class="cursor-pointer" data-image-icon="{{ getSongIcon(song) }}"></span></td>
                 <td>{{ song.tracknumber }}</td>
                 <td title="{{ song.title }}">{{ song.title }}</td>
