@@ -269,6 +269,22 @@ def create_playlist():
     return jsonify({'message': 'No name parameter'}), 400
 
 
+@app.route('/v1/playlists/<int:playlist_id>/delete', methods=['POST'])
+@crossdomain(origin='*')
+def delete_playlist(playlist_id):
+    token = request.form.get('token')
+    if not AUTHENTICATION_ENABLED:
+        username = TEST_USERNAME
+    else:
+        session = user.get_session(token)
+        username = session.json()['user']['name']
+    try:
+        return jsonify(playlist.delete_playlist(username, playlist_id))
+    except Exception, e:
+        return jsonify({'message': str(e)}), 400
+    return jsonify({'message': 'No id parameter'}), 400
+
+
 @app.route('/v1/now_playing', methods=['GET'])
 @crossdomain(origin='*')
 def now_playing():

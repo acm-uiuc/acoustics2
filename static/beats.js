@@ -226,7 +226,7 @@ function($scope, $http, $interval, $cookies)
     $scope.playlist = [];
     $scope.albumlist = [];
     $scope.queue = [];
-    $scope.playlist_id = -1;
+    $scope.current_playlist = null;
     $scope.volume = 0;
     $scope.holdVolumeUpdate = false;
     $scope.playbackTime = 0;
@@ -394,18 +394,26 @@ function($scope, $http, $interval, $cookies)
     $scope.addToPlayList = function(playlist, song)
     {
         // Add the song to the given playlist
-        console.log(playlist.title + ' <- ' + song.title);
+        console.log(playlist.name + ' <- ' + song.title);
 
         $scope.userRequest("/v1/playlists/" + playlist.id + "/add_song", "id=" + song.id );
     };
 
-    $scope.removeFromPlaylist = function(song)
+    $scope.removeFromPlaylist = function(song, index)
     {
-        if(playlist_id == -1) {
+        if(!$scope.current_playlist) {
             return;
         }
-        console.log(song.id);
-        $scope.userRequest("/v1/playlists/" + $scope.playlist_id + "/remove_song", "id=" + song.id );
+        $scope.userRequest("/v1/playlists/" + $scope.current_playlist.id + "/remove_song", "id=" + song.id );
+        $scope.playlist.splice(index, 1);
+    };
+
+    $scope.deleteCurrentPlaylist = function(playlist) {
+        if(!$scope.current_playlist) {
+            return;
+        }
+        $scope.userRequest("/v1/playlists/" + $scope.current_playlist.id + "/delete");
+        $scope.randomSongs();
     };
 
     //
@@ -536,7 +544,7 @@ function($scope, $http, $interval, $cookies)
                 }
                 $scope.albumlist = albums;
                 $scope.layout = 'albumgrid';
-                $scope.playlist_id = -1;
+                $scope.current_playlist = null;
                 $scope.searchText = query;
             }
             else
@@ -549,7 +557,7 @@ function($scope, $http, $interval, $cookies)
                 }
                 $scope.playlist = songs;
                 $scope.layout = 'songlist';
-                $scope.playlist_id = -1;
+                $scope.current_playlist = null;
                 $scope.searchText = query;
             }
         });
@@ -568,7 +576,7 @@ function($scope, $http, $interval, $cookies)
             }
             $scope.playlist = songs;
             $scope.layout = 'songlist';
-            $scope.playlist_id = -1;
+            $scope.current_playlist = null;
             $scope.searchText = '';
         });
     }
@@ -595,7 +603,7 @@ function($scope, $http, $interval, $cookies)
             }
             $scope.playlist = songs;
             $scope.layout = 'playlist';
-            $scope.playlist_id = playlist.id;
+            $scope.current_playlist = playlist;
             $scope.searchText = '';
         });
     };
