@@ -164,6 +164,7 @@ html, body {
     width: auto;
     display: inline-block; }
   .playlist-detail .details {
+    margin-left: 10px;
     display: block;
     flex: none; }
   .playlist-detail .details .title {
