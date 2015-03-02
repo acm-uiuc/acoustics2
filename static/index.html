@@ -91,10 +91,19 @@ Source: https://github.com/acm-uiuc/beats
         </div>
 
         <div class="playlist-area" ng-show="layout == 'songlist' || layout == 'playlist'">
-          <div ng-show="layout == 'playlist'"><span data-icon="&#xf001;"></span>{{ current_playlist.name }}
-            <button type="button" class="cancel" title="Delete" ng-click="deleteCurrentPlaylist()">
-              <span data-icon="&#xf00d;"></span>Delete
-            </button>
+          <div class="playlist-detail" ng-show="layout == 'playlist'">
+            <div class="grid">
+              <img ng-src="{{defaultAlbumArt}}"/>
+              <img ng-src="{{defaultAlbumArt}}"/>
+              <img ng-src="{{defaultAlbumArt}}"/>
+              <img ng-src="{{defaultAlbumArt}}"/>
+            </div>
+            <div class="option"> 
+              <span data-icon="&#xf001;"></span>{{ current_playlist.name }}
+              <button type="button" class="cancel" title="Delete" ng-click="deleteCurrentPlaylist()">
+                <span data-icon="&#xf00d;"></span>Delete
+              </button>
+            </div>
           </div>
           <table class="playlist">
             <colgroup>
