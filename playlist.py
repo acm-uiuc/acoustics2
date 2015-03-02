@@ -65,13 +65,13 @@ def add_song_to_playlist(user, playlist_id, song_id):
     if user != playlist.user:
         raise Exception("User is not the owner of this playlist")
 
-    dup = session.query(PlaylistItem).filter_by(song_id=song_id).first()
+    dup = session.query(PlaylistItem).filter_by(song_id=song_id, playlist_id=playlist_id).first()
     if not dup: # no bike in DB
         item = PlaylistItem(playlist_id=playlist_id, song_id=song_id, index=index)
         session.add(item)
 
     session.commit()
-    return {'id': playlist_id, 'song_id': song_id, 'index': index}
+    return get_playlist(playlist_id)
 
 def remove_song_from_playlist(user, playlist_id, song_id):
     session = Session()

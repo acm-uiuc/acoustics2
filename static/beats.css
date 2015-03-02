@@ -145,25 +145,48 @@ html, body {
 
 .playlist-detail {
   padding: 6px;
-  width: 600px; 
-  display: inline-block; } 
+  display: flex; } 
   .playlist-detail .grid {
-    border: 1px solid #CCC;
+    flex: none;
+    border: 3px solid #AAA;
+    border-radius: 5px;
     float: left;
-    max-width: 164px; 
-    max-height: 166px; }
+    width: 160px; 
+    height: 160px; }
+  .playlist-detail .image {
+    width: 80px;
+    height: 80px;
+    float: left;
+    overflow: hidden; }
   .playlist-detail img {
-    max-width: 80px;
-    display: inline-block;
-    width: 100%; }
-  .playlist-detail .option {
-    padding: 20px;
+    max-height: 100%;
+    height: auto;
+    width: auto;
+    display: inline-block; }
+  .playlist-detail .details {
+    display: block;
+    flex: none; }
+  .playlist-detail .details .title {
+    width: auto;
+    margin: 10px;
     color: white;
     font-family: 'Arial';
     font-size: 20px;
     font-weight: 300;
     table-layout: fixed;
+    overflow-x: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
     float: left; }
+  .playlist-detail .details hr {
+    border-color: #444;
+    margin: 4px 0; }
+  .playlist-detail .details .detail {
+    margin: 10px;
+    color: #AAA;
+    font-family: 'Arial';
+    font-size: 16px;
+    font-weight: 300; }
 
 .albumgrid-area {
   align-items: flex-start;

@@ -246,11 +246,11 @@ function($scope, $http, $interval, $cookies)
 
     $scope.playlists =
     [
-        { title: 'Rock' },
-        { title: 'Pop' },
-        { title: 'Top 40' },
-        { title: 'Hardcore' },
-        { title: 'Witch-Hop' },
+        // { title: 'Rock' },
+        // { title: 'Pop' },
+        // { title: 'Top 40' },
+        // { title: 'Hardcore' },
+        // { title: 'Witch-Hop' },
     ];
 
     //
@@ -404,8 +404,9 @@ function($scope, $http, $interval, $cookies)
         if(!$scope.current_playlist) {
             return;
         }
-        $scope.userRequest("/v1/playlists/" + $scope.current_playlist.id + "/remove_song", "id=" + song.id );
-        $scope.playlist.splice(index, 1);
+        if($scope.userRequest("/v1/playlists/" + $scope.current_playlist.id + "/remove_song", "id=" + song.id )) {
+            $scope.playlist.splice(index, 1);
+        }
     };
 
     $scope.deleteCurrentPlaylist = function(playlist) {
@@ -484,6 +485,7 @@ function($scope, $http, $interval, $cookies)
         {
             delete $cookies['crowd.token_key'];
             $scope.loggedIn = null;
+            $scope.refreshPlaylists();
         });
     };
 
@@ -501,6 +503,7 @@ function($scope, $http, $interval, $cookies)
         .success(function(data)
         {
             $scope.loggedIn = data.user;
+            $scope.refreshPlaylists();
         })
         .error(function(data, status)
         {
@@ -603,13 +606,17 @@ function($scope, $http, $interval, $cookies)
             }
             $scope.playlist = songs;
             $scope.layout = 'playlist';
-            $scope.current_playlist = playlist;
+            $scope.current_playlist = data;
             $scope.searchText = '';
         });
     };
 
     $scope.refreshPlaylists = function()
     {
+        $scope.playlists = [];
+        if(!$scope.loggedIn) {
+            return;
+        }
         var params = {};
         params['user'] = $scope.loggedIn['name'];
         $http.get(backendBase + '/v1/playlists',
@@ -712,7 +719,6 @@ function($scope, $http, $interval, $cookies)
         if ($scope.loggedIn)
         {
             params['user'] = $scope.loggedIn['name'];
-            $scope.refreshPlaylists();
         }
         $http.get(backendBase + '/v1/queue',
         {

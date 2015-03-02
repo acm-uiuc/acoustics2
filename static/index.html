@@ -93,21 +93,26 @@ Source: https://github.com/acm-uiuc/beats
         <div class="playlist-area" ng-show="layout == 'songlist' || layout == 'playlist'">
           <div class="playlist-detail" ng-show="layout == 'playlist'">
             <div class="grid">
-              <img ng-src="{{defaultAlbumArt}}"/>
-              <img ng-src="{{defaultAlbumArt}}"/>
-              <img ng-src="{{defaultAlbumArt}}"/>
-              <img ng-src="{{defaultAlbumArt}}"/>
+              <div class="image"><img ng-src="{{playlist[0].art_uri || defaultAlbumArt}}"/></div>
+              <div class="image"><img ng-src="{{playlist[1].art_uri || defaultAlbumArt}}"/></div>
+              <div class="image"><img ng-src="{{playlist[2].art_uri || defaultAlbumArt}}"/></div>
+              <div class="image"><img ng-src="{{playlist[3].art_uri || defaultAlbumArt}}"/></div>
             </div>
-            <div class="option"> 
-              <span data-icon="&#xf001;"></span>{{ current_playlist.name }}
-              <button type="button" class="cancel" title="Delete" ng-click="deleteCurrentPlaylist()">
+            <div class="details">
+              <div class="title"> 
+                <span data-icon="&#xf001;"></span>{{ current_playlist.name }}
+              <hr>
+              </div>
+              <div class="detail">Songs: {{ playlist.length }}</div>
+              <div class="detail">Creator: {{ current_playlist.user }}</div>
+              <button class="control rect-button" title="Delete" ng-show="loggedIn.name == current_playlist.user" ng-click="deleteCurrentPlaylist()">
                 <span data-icon="&#xf00d;"></span>Delete
               </button>
             </div>
           </div>
           <table class="playlist">
             <colgroup>
-              <col ng-show="layout == 'playlist'" span="1" style="width: 3%">
+              <col ng-show="layout == 'playlist' && loggedIn.name == current_playlist.user" span="1" style="width: 3%">
               <col span="1" style="width: 5%;">
               <col span="1" style="width: 5%;">
               <col span="1" style="width: 33%;">
@@ -117,11 +122,11 @@ Source: https://github.com/acm-uiuc/beats
               <col span="1" style="width: 6%;">
             </colgroup>
             <thead>
-              <tr><th ng-show="layout == 'playlist'"> </th><th>Vote</th><th>Track</th><th>Title</th><th>Artist</th><th>Album</th><th>Length</th><th>Plays</th></tr>
+              <tr><th ng-show="layout == 'playlist' && loggedIn.name == current_playlist.user"> </th><th>Vote</th><th>Track</th><th>Title</th><th>Artist</th><th>Album</th><th>Length</th><th>Plays</th></tr>
             </thead>
             <tbody>
               <tr ng-repeat="song in playlist track by $index" draggable="true" drag-song="song">
-                <td style="text-align: center" ng-show="layout == 'playlist'" ng-click="removeFromPlaylist(song, $index)"> <span class="cursor-pointer" data-image-icon="&#xf00d;"></span></td>
+                <td style="text-align: center" ng-show="layout == 'playlist' && loggedIn.name == current_playlist.user" ng-click="removeFromPlaylist(song, $index)"> <span class="cursor-pointer" data-image-icon="&#xf00d;"></span></td>
                 <td style="text-align: center" ng-click="voteSong(song)"><span class="cursor-pointer" data-image-icon="{{ getSongIcon(song) }}"></span></td>
                 <td>{{ song.tracknumber }}</td>
                 <td title="{{ song.title }}">{{ song.title }}</td>
