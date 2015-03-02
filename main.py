@@ -239,9 +239,9 @@ def remove_song_from_playlist(playlist_id):
             return jsonify({'message': 'Playlist does not exist'}), 400
     return jsonify({'message': 'No id parameter'}), 400
 
-@app.route('/v1/playlists/<int:playlist_id>/swap_songs', methods=['POST'])
+@app.route('/v1/playlists/<int:playlist_id>/move_song', methods=['POST'])
 @crossdomain(origin='*')
-def swap_song_indices(playlist_id):
+def move_song_index(playlist_id):
     token = request.form.get('token')
     if not AUTHENTICATION_ENABLED:
         username = TEST_USERNAME
@@ -251,7 +251,7 @@ def swap_song_indices(playlist_id):
     if request.form.get('a') and request.form.get('b'):
         a = request.form.get('a')
         b = request.form.get('b')
-        return jsonify(playlist.swap_song_indices(username, playlist_id, a, b))
+        return jsonify(playlist.move_song_index(username, playlist_id, a, b))
     return jsonify({'message': 'No songs specified'}), 400
 
 @app.route('/v1/playlists', methods=['GET'])

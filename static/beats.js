@@ -659,7 +659,7 @@ function($scope, $http, $interval, $cookies)
         if(a == b || !$scope.current_playlist || !$scope.loggedIn || $scope.current_playlist.user != $scope.loggedIn['name']) {
           return;
         }
-        $scope.userRequest("/v1/playlists/" + $scope.current_playlist.id + "/swap_songs", "a=" + a + "&b=" + b );
+        $scope.userRequest("/v1/playlists/" + $scope.current_playlist.id + "/move_song", "a=" + a + "&b=" + b );
         var lookup = {};
         Array.prototype.getIndexBy = function (name, value) {
             for (var i = 0; i < this.length; i++) {

@@ -82,7 +82,7 @@ def remove_song_from_playlist(user, playlist_id, song_id):
     session.commit()
     return get_playlist(playlist_id)
 
-def swap_song_indices(user, playlist_id, a, b):
+def move_song_index(user, playlist_id, a, b):
     session = Session()
     first = session.query(PlaylistItem).filter_by(playlist_id=playlist_id, song_id=a).first()
     second = session.query(PlaylistItem).filter_by(playlist_id=playlist_id, song_id=b).first()
