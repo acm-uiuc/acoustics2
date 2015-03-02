@@ -59,7 +59,6 @@ def add_song_to_playlist(user, playlist_id, song_id):
     index = 0
     if append_index:
         index = append_index.index + 1
-    print index;
 
     playlist = session.query(Playlist).get(playlist_id)
     if user != playlist.user:
@@ -80,5 +79,19 @@ def remove_song_from_playlist(user, playlist_id, song_id):
     if user != playlist.user:
         raise Exception("User is not the owner of this playlist")
     session.delete(item)
+    session.commit()
+    return get_playlist(playlist_id)
+
+def swap_song_indices(user, playlist_id, a, b):
+    session = Session()
+    first = session.query(PlaylistItem).filter_by(playlist_id=playlist_id, song_id=a).first()
+    second = session.query(PlaylistItem).filter_by(playlist_id=playlist_id, song_id=b).first()
+    atmp = first.index
+    btmp = second.index
+    first.index = -1
+    second.index = -2
+    session.commit()
+    second.index = atmp
+    first.index = btmp
     session.commit()
     return get_playlist(playlist_id)

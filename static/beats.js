@@ -485,7 +485,6 @@ function($scope, $http, $interval, $cookies)
         {
             delete $cookies['crowd.token_key'];
             $scope.loggedIn = null;
-            $scope.refreshPlaylists();
         });
     };
 
@@ -503,7 +502,6 @@ function($scope, $http, $interval, $cookies)
         .success(function(data)
         {
             $scope.loggedIn = data.user;
-            $scope.refreshPlaylists();
         })
         .error(function(data, status)
         {
@@ -613,7 +611,6 @@ function($scope, $http, $interval, $cookies)
 
     $scope.refreshPlaylists = function()
     {
-        $scope.playlists = [];
         if(!$scope.loggedIn) {
             return;
         }
@@ -654,6 +651,28 @@ function($scope, $http, $interval, $cookies)
                 song.vote = true;
             }
         }
+    };
+
+    $scope.swapSongs = function(a, b)
+    {
+        console.log(a + " " + b + " " + $scope.current_playlist.user + " " + $scope.loggedIn.name);
+        if(a == b || !$scope.current_playlist || !$scope.loggedIn || $scope.current_playlist.user != $scope.loggedIn['name']) {
+          return;
+        }
+        $scope.userRequest("/v1/playlists/" + $scope.current_playlist.id + "/swap_songs", "a=" + a + "&b=" + b );
+        var lookup = {};
+        Array.prototype.getIndexBy = function (name, value) {
+            for (var i = 0; i < this.length; i++) {
+                if (this[i][name] == value) {
+                    return i;
+                }
+            }
+        }
+        var first = $scope.playlist.getIndexBy("id", a);
+        var second = $scope.playlist.getIndexBy("id", b);
+        var t = $scope.playlist[first];
+        $scope.playlist[first] = $scope.playlist[second];
+        $scope.playlist[second] = t;
     };
 
     $scope.playYouTube = function(url)
@@ -719,6 +738,11 @@ function($scope, $http, $interval, $cookies)
         if ($scope.loggedIn)
         {
             params['user'] = $scope.loggedIn['name'];
+            $scope.refreshPlaylists();
+        }
+        else
+        {
+            $scope.playlists = [];
         }
         $http.get(backendBase + '/v1/queue',
         {
