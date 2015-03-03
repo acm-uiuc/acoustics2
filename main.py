@@ -231,13 +231,13 @@ def remove_song_from_playlist(playlist_id):
     else:
         session = user.get_session(token)
         username = session.json()['user']['name']
-    if request.form.get('id'):
-        song_id = request.form.get('id')
+    if request.form.get('index'):
+        index = request.form.get('index')
         try:
-            return jsonify(playlist.remove_song_from_playlist(username, playlist_id, song_id))
-        except AttributeError:
-            return jsonify({'message': 'Playlist does not exist'}), 400
-    return jsonify({'message': 'No id parameter'}), 400
+            return jsonify(playlist.remove_song_from_playlist(username, playlist_id, index))
+        except Exception, e:
+            return jsonify({'message': str(e)}), 400
+    return jsonify({'message': 'No index parameter'}), 400
 
 @app.route('/v1/playlists/<int:playlist_id>/move_song', methods=['POST'])
 @crossdomain(origin='*')

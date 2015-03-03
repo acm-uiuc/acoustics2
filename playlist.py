@@ -66,32 +66,24 @@ def add_song_to_playlist(user, playlist_id, song_id):
 
     dup = session.query(PlaylistItem).filter_by(song_id=song_id, playlist_id=playlist_id).first()
     if not dup: # no bike in DB
-        item = PlaylistItem(playlist_id=playlist_id, song_id=song_id, index=index)
+        item = PlaylistItem(playlist_id=playlist_id, song_id=song_id, index=index, list_order=index)
         session.add(item)
 
     session.commit()
     return get_playlist(playlist_id)
 
-def remove_song_from_playlist(user, playlist_id, song_id):
+def remove_song_from_playlist(user, playlist_id, order):
     session = Session()
-    item = session.query(PlaylistItem).filter_by(playlist_id=playlist_id, song_id=song_id).first()
+    item = session.query(PlaylistItem).filter_by(playlist_id=playlist_id, list_order=order).first()
     playlist = session.query(Playlist).get(playlist_id)
     if user != playlist.user:
         raise Exception("User is not the owner of this playlist")
     session.delete(item)
-    session.commit()
-    return get_playlist(playlist_id)
-
-def move_song_index(user, playlist_id, a, b):
-    session = Session()
-    first = session.query(PlaylistItem).filter_by(playlist_id=playlist_id, song_id=a).first()
-    second = session.query(PlaylistItem).filter_by(playlist_id=playlist_id, song_id=b).first()
-    atmp = first.index
-    btmp = second.index
-    first.index = -1
-    second.index = -2
-    session.commit()
-    second.index = atmp
-    first.index = btmp
+    result = session.query(PlaylistItem).filter(PlaylistItem.index > item.index)
+    for i in result:
+        i.index = i.index - 1;
+    result = session.query(PlaylistItem).filter(PlaylistItem.list_order > item.list_order)
+    for i in result:
+        i.list_order = i.list_order - 1;
     session.commit()
     return get_playlist(playlist_id)

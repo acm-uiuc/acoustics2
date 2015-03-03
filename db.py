@@ -129,6 +129,7 @@ class PlaylistItem(Base):
         Integer, ForeignKey('playlists.id', ondelete='CASCADE'),
         primary_key=True)
     index = Column(Integer, primary_key=True, autoincrement=False)
+    list_order = Column(Integer, primary_key=True, autoincrement=False)
     song_id = Column(Integer, ForeignKey('songs.id', ondelete='CASCADE'))
 
     __table_args__ = (UniqueConstraint('playlist_id', 'song_id'),)

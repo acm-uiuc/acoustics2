@@ -244,14 +244,7 @@ function($scope, $http, $interval, $cookies)
         { title: 'Top 50', icon: '\uf01b', query: 'top-songs:50' },
     ];
 
-    $scope.playlists =
-    [
-        // { title: 'Rock' },
-        // { title: 'Pop' },
-        // { title: 'Top 40' },
-        // { title: 'Hardcore' },
-        // { title: 'Witch-Hop' },
-    ];
+    $scope.playlists = [];
 
     //
     // Utility Functions
@@ -399,12 +392,12 @@ function($scope, $http, $interval, $cookies)
         $scope.userRequest("/v1/playlists/" + playlist.id + "/add_song", "id=" + song.id );
     };
 
-    $scope.removeFromPlaylist = function(song, index)
+    $scope.removeFromPlaylist = function(index)
     {
         if(!$scope.current_playlist) {
             return;
         }
-        if($scope.userRequest("/v1/playlists/" + $scope.current_playlist.id + "/remove_song", "id=" + song.id )) {
+        if($scope.userRequest("/v1/playlists/" + $scope.current_playlist.id + "/remove_song", "index=" + index )) {
             $scope.playlist.splice(index, 1);
         }
     };
@@ -584,10 +577,6 @@ function($scope, $http, $interval, $cookies)
 
     $scope.loadPlaylist = function(playlist)
     {
-        if (!playlist)  {
-            $scope.randomSongs(); //todo: should clear the song list instead
-            return; 
-        }
         var params = {};
         params['user'] = $scope.loggedIn['name'];
         $http.get(backendBase + '/v1/playlists/' + playlist.id,
@@ -651,28 +640,6 @@ function($scope, $http, $interval, $cookies)
                 song.vote = true;
             }
         }
-    };
-
-    $scope.swapSongs = function(a, b)
-    {
-        console.log(a + " " + b + " " + $scope.current_playlist.user + " " + $scope.loggedIn.name);
-        if(a == b || !$scope.current_playlist || !$scope.loggedIn || $scope.current_playlist.user != $scope.loggedIn['name']) {
-          return;
-        }
-        $scope.userRequest("/v1/playlists/" + $scope.current_playlist.id + "/move_song", "a=" + a + "&b=" + b );
-        var lookup = {};
-        Array.prototype.getIndexBy = function (name, value) {
-            for (var i = 0; i < this.length; i++) {
-                if (this[i][name] == value) {
-                    return i;
-                }
-            }
-        }
-        var first = $scope.playlist.getIndexBy("id", a);
-        var second = $scope.playlist.getIndexBy("id", b);
-        var t = $scope.playlist[first];
-        $scope.playlist[first] = $scope.playlist[second];
-        $scope.playlist[second] = t;
     };
 
     $scope.playYouTube = function(url)
