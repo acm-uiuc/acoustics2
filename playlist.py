@@ -23,10 +23,16 @@ def get_playlist(playlist_id):
     session = Session()
     playlist = session.query(Playlist).get(playlist_id)
 
-    songs = session.query(Song) \
-            .join(PlaylistItem) \
+    result = session.query(PlaylistItem) \
             .filter(PlaylistItem.playlist_id == playlist_id) \
             .order_by(PlaylistItem.index).all()
+
+    songs = []
+    for r in result:
+        s = session.query(Song) \
+            .filter(r.song_id == Song.id).first()
+        songs.append(s)
+
     session.commit()
     songs_list = [song.dictify() for song in songs]
     return {'id': playlist_id, 'user': playlist.user, 'name': playlist.name, 'songs': songs_list}
@@ -64,10 +70,8 @@ def add_song_to_playlist(user, playlist_id, song_id):
     if user != playlist.user:
         raise Exception("User is not the owner of this playlist")
 
-    dup = session.query(PlaylistItem).filter_by(song_id=song_id, playlist_id=playlist_id).first()
-    if not dup: # no bike in DB
-        item = PlaylistItem(playlist_id=playlist_id, song_id=song_id, index=index, list_order=index)
-        session.add(item)
+    item = PlaylistItem(playlist_id=playlist_id, song_id=song_id, index=index, list_order=index)
+    session.add(item)
 
     session.commit()
     return get_playlist(playlist_id)

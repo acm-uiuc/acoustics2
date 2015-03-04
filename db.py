@@ -132,8 +132,6 @@ class PlaylistItem(Base):
     list_order = Column(Integer, primary_key=True, autoincrement=False)
     song_id = Column(Integer, ForeignKey('songs.id', ondelete='CASCADE'))
 
-    __table_args__ = (UniqueConstraint('playlist_id', 'song_id'),)
-
 
 def init_db():
     Base.metadata.create_all(engine)
