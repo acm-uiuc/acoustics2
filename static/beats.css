@@ -169,6 +169,7 @@ html, body {
     flex: none; }
   .playlist-detail .details .title {
     width: auto;
+    min-width: 100px;
     margin: 10px;
     color: white;
     font-family: 'Arial';

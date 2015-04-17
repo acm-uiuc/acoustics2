@@ -211,7 +211,7 @@ function($scope, $http, $interval, $cookies)
     // Data
     //
 
-    var backendBase = '/beats/1104';
+    var backendBase = '';
     var authentication = true;
 
     $scope.showLoginDialog = false;
@@ -226,7 +226,7 @@ function($scope, $http, $interval, $cookies)
     $scope.playlist = [];
     $scope.albumlist = [];
     $scope.queue = [];
-    $scope.current_playlist = null;
+    $scope.currentPlaylist = null;
     $scope.volume = 0;
     $scope.holdVolumeUpdate = false;
     $scope.playbackTime = 0;
@@ -394,20 +394,38 @@ function($scope, $http, $interval, $cookies)
 
     $scope.removeFromPlaylist = function(index)
     {
-        if(!$scope.current_playlist) {
+        if(!$scope.currentPlaylist) {
             return;
         }
-        if($scope.userRequest("/v1/playlists/" + $scope.current_playlist.id + "/remove_song", "index=" + index )) {
+        if($scope.userRequest("/v1/playlists/" + $scope.currentPlaylist.id + "/remove_song", "index=" + index )) {
             $scope.playlist.splice(index, 1);
         }
     };
 
     $scope.deleteCurrentPlaylist = function(playlist) {
-        if(!$scope.current_playlist) {
+        if(!$scope.currentPlaylist) {
             return;
         }
-        $scope.userRequest("/v1/playlists/" + $scope.current_playlist.id + "/delete");
+        $scope.userRequest("/v1/playlists/" + $scope.currentPlaylist.id + "/delete");
         $scope.randomSongs();
+    };
+
+    $scope.moveSong = function(first, second) {
+        if(!$scope.loggedIn || !$scope.currentPlaylist || $scope.currentPlaylist.user != $scope.loggedIn.name) {
+            return;
+        }
+        $scope.userRequest("/v1/playlists/" + $scope.currentPlaylist.id + "/move_song", "a=" + first + "&b=" + second )
+        Array.prototype.move = function (old_index, new_index) {
+        if (new_index >= this.length) {
+                var k = new_index - this.length;
+                while ((k--) + 1) {
+                    this.push(undefined);
+                }
+            }
+            this.splice(new_index, 0, this.splice(old_index, 1)[0]);
+            return this; // for testing purposes
+        };
+        $scope.playlist.move(first, second);
     };
 
     //
@@ -538,7 +556,7 @@ function($scope, $http, $interval, $cookies)
                 }
                 $scope.albumlist = albums;
                 $scope.layout = 'albumgrid';
-                $scope.current_playlist = null;
+                $scope.currentPlaylist = null;
                 $scope.searchText = query;
             }
             else
@@ -551,7 +569,7 @@ function($scope, $http, $interval, $cookies)
                 }
                 $scope.playlist = songs;
                 $scope.layout = 'songlist';
-                $scope.current_playlist = null;
+                $scope.currentPlaylist = null;
                 $scope.searchText = query;
             }
         });
@@ -570,7 +588,7 @@ function($scope, $http, $interval, $cookies)
             }
             $scope.playlist = songs;
             $scope.layout = 'songlist';
-            $scope.current_playlist = null;
+            $scope.currentPlaylist = null;
             $scope.searchText = '';
         });
     }
@@ -590,10 +608,11 @@ function($scope, $http, $interval, $cookies)
             {
                 var result = data.songs[resultIndex];
                 songs[resultIndex] = result;
+                songs[resultIndex].order = resultIndex;
             }
             $scope.playlist = songs;
             $scope.layout = 'playlist';
-            $scope.current_playlist = data;
+            $scope.currentPlaylist = data;
             $scope.searchText = '';
         });
     };

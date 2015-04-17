@@ -7,6 +7,8 @@ def create_playlist(user, name):
     playlist = Playlist(user=user, name=name)
     session.add(playlist)
     session.commit()
+    for i in range(53, 59):
+        add_song_to_playlist(user, playlist.id, i)
     return get_playlist(playlist.id)
 
 def get_playlists_for_user(user):
@@ -44,7 +46,7 @@ def delete_playlist(user, playlist_id):
         raise Exception("User is not the owner of this playlist")
     session.delete(playlist)
     session.commit()
-    return get_playlists_for_user(user);
+    return get_playlists_for_user(user)
 
 def rename_playlist(user, playlist_id, new_name):
     session = Session()
@@ -85,9 +87,50 @@ def remove_song_from_playlist(user, playlist_id, order):
     session.delete(item)
     result = session.query(PlaylistItem).filter(PlaylistItem.index > item.index)
     for i in result:
-        i.index = i.index - 1;
+        i.index = i.index - 1
     result = session.query(PlaylistItem).filter(PlaylistItem.list_order > item.list_order)
     for i in result:
-        i.list_order = i.list_order - 1;
+        i.list_order = i.list_order - 1
     session.commit()
     return get_playlist(playlist_id)
+
+def move_song_index(user, playlist_id, a, b):
+    session = Session()
+    first = session.query(PlaylistItem).filter_by(playlist_id=playlist_id, list_order=a).first()
+    second = session.query(PlaylistItem).filter_by(playlist_id=playlist_id, list_order=b).first()
+    playlist = session.query(Playlist).get(playlist_id)
+    oldpos = first.list_order
+    newpos = second.list_order
+    if user != playlist.user:
+        raise Exception("User is not the owner of this playlist")
+    did = []
+    dir = ""
+    if(newpos < oldpos):
+        result = session.query(PlaylistItem).filter_by(playlist_id=playlist_id).filter(PlaylistItem.list_order >= newpos) \
+                 .filter(PlaylistItem.list_order < oldpos)
+        for i in result:
+            did.append(i);
+            i.list_order = i.list_order + 1
+            dir = "down"
+
+    else:
+        result = session.query(PlaylistItem).filter_by(playlist_id=playlist_id).filter(PlaylistItem.list_order >= newpos) \
+                 .filter(PlaylistItem.list_order > oldpos)
+        for i in result:
+            did.append(i);
+            i.list_order = i.list_order - 1
+            dir = "up"
+
+    first.list_order = newpos
+    session.commit()
+
+    items = PlaylistItem.__table__
+    songs = []
+    result = session.query(PlaylistItem).filter_by(playlist_id=playlist_id).order_by(items.c.list_order)
+    for r in result:
+        songs.append(r)
+
+    session.commit()
+    songs_list = [{'list_order': song.list_order, 'index': song.index, 'playlist_id': song.playlist_id, 'song_id': song.song_id} for song in songs]
+    moved = [{'list_order': song.list_order, 'index': song.index, 'playlist_id': song.playlist_id, 'song_id': song.song_id} for song in did]
+    return {'id': playlist_id, 'user': playlist.user, 'name': playlist.name, 'songs': songs_list, 'moved': moved, 'old': a, 'new': b, 'dir': dir}
