@@ -7,6 +7,8 @@ from config import config
 import song
 import player
 import user
+import urllib
+import lxml.html
 
 AUTHENTICATION_ENABLED = config.getboolean('Authentication', 'enabled')
 if not AUTHENTICATION_ENABLED:
@@ -190,10 +192,22 @@ def queue_add():
             return jsonify({'message': str(e)}), 400
     elif request.form.get('url'):
         url = request.form.get('url')
-        try:
-            return jsonify(scheduler.vote_song(username, video_url=url))
-        except Exception, e:
-            return jsonify({'message': str(e)}), 400
+        if "playlist" in url:
+            connection = urllib.urlopen('url')
+            dom =  lxml.html.fromstring(connection.read())
+            for link in dom.xpath('//a/@href'):
+                if "/watch?v=" in link:
+                    try:
+                        link = 'http://youtube.com' + link
+                        scheduler.vote_song(username, video_url=link)
+                    except Exception, e:
+                        return jsonify({'message': str(e)}), 400
+            return jsonify({'message:': 'Successfully added playlist'})
+        else:
+            try:
+                return jsonify(scheduler.vote_song(username, video_url=url))
+            except Exception, e:
+                return jsonify({'message': str(e)}), 400
     return jsonify({'message': 'No id or url parameter'}), 400
 
 
