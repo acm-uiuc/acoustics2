@@ -8,17 +8,29 @@ IEEE/ACM Trans. Netw. 1, 3 (June 1993), 344-357. DOI=10.1109/90.234856
 http://dx.doi.org/10.1109/90.234856
 """
 
+from collections import deque
 from config import config
+from ConfigParser import NoOptionError
 from db import Session, Song, PlayHistory, Packet, Vote
+from sets import Set
 import song
 from youtube import get_youtube_video_details, YouTubeVideo
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm.exc import FlushError
+from sqlalchemy.sql.expression import not_, func
 import threading
 import time
 import player
 
 PLAYER_NAME = config.get('Player', 'player_name')
+try:
+    DONT_REPEAT_FOR = config.getfloat('Player', 'dont_repeat_for')
+except NoOptionError:
+    DONT_REPEAT_FOR = 0.0
+try:
+    MAX_DONT_REPEAT_FOR = config.getint('Player', 'max_dont_repeat_for')
+except NoOptionError:
+    MAX_DONT_REPEAT_FOR = None
 
 SCHEDULER_INTERVAL_SEC = 0.25
 """Interval at which to run the scheduler loop"""
@@ -26,6 +38,8 @@ SCHEDULER_INTERVAL_SEC = 0.25
 
 class Scheduler(object):
     virtual_time = 0.0
+    discard_pile = deque([])
+    discard_set = Set([])
 
     active_sessions = 0
     """Number of users with currently queued songs"""
@@ -34,6 +48,81 @@ class Scheduler(object):
         self._initialize_virtual_time()
         self._update_active_sessions()
         self._update_finish_times()
+
+    def trim_list(self, max_list_size):
+        while len(self.discard_pile) > max_list_size:
+            self.remove_song_from_discard_pile()
+
+    def add_song_to_discard_pile(self, song):
+        if not song in self.discard_set:
+            self.discard_set.add(song)
+            self.discard_pile.append(song)
+
+    def remove_song_from_discard_pile(self):
+        song = self.discard_pile.popleft()
+        if song in self.discard_set:
+            self.discard_set.remove(song)
+
+    @staticmethod
+    def compute_max_discard_pile_size(db_size):
+        max_discard_size = int(DONT_REPEAT_FOR * db_size)
+        if MAX_DONT_REPEAT_FOR is not None:
+            max_discard_size = min(MAX_DONT_REPEAT_FOR, max_discard_size)
+        return max_discard_size
+
+    def update_discard_pile_with_song(self, session, song):
+        if DONT_REPEAT_FOR != 0.0 and MAX_DONT_REPEAT_FOR != 0:
+            count = session.query(func.count(Song.id)).scalar()
+            max_discard_size = self.compute_max_discard_pile_size(count)
+            if max_discard_size != 0:
+                self.add_song_to_discard_pile(song)
+                self.trim_list(max_discard_size)
+
+    def get_random_song(self):
+        # Algorithm based on http://stackoverflow.com/questions/5467174
+
+        # If the condition below holds true, then we only need to fetch the
+        # next song naively
+        if DONT_REPEAT_FOR == 0.0 or MAX_DONT_REPEAT_FOR == 0:
+            return song.random_songs(limit=1)['results']
+
+        # Query the database for the list of songs and a list of at most one
+        # random song that doesn't exist in the discard pile
+        table = Song.__table__
+        session = Session()
+        db_filenames = session.query(table.c.path).all()
+        random_song = session.query(Song).order_by(func.rand())
+        if len(self.discard_pile) != 0:
+            random_song = random_song.filter(
+                not_(Song.path.in_(self.discard_pile)))
+        random_song = random_song.limit(1).all()
+        session.commit()
+
+        # Clean up the discard pile
+        max_discard_size = self.compute_max_discard_pile_size(
+            len(db_filenames))
+        if max_discard_size == 0:
+            # Everything gets weeded out in the discard pile in this case
+            self.discard_pile.clear()
+        else:
+            # Efficiently weed out the filenames in the discard pile that don't
+            # exist in the database anymore
+            filename_set = Set(db_filenames)
+            num_filenames = len(self.discard_pile)
+            for k in xrange(num_filenames):
+                filename = self.discard_pile.pop()
+                if (filename, ) in filename_set:
+                    self.discard_pile.appendleft(filename)
+            # Update the discard pile
+            self.trim_list(max_discard_size)
+
+        # Obtain random song and update the discard pile
+        song = [s.dictify() for s in random_song]
+        if len(song) == 1 and max_discard_size != 0:
+            self.add_song_to_discard_pile(song[0]['path'])
+            self.trim_list(max_discard_size)
+
+        return song
 
     def vote_song(self, user, song_id=None, video_url=None):
         """Vote for a song"""
@@ -193,8 +282,9 @@ class Scheduler(object):
         return self.get_queue()
 
     def play_next(self, skip=False):
+        random_song = None
         if self.empty():
-            random_song = song.random_songs(limit=1)['results']
+            random_song = self.get_random_song()
             if len(random_song) == 1:
                 self.vote_song('RANDOM', random_song[0]['id'])
 
@@ -216,6 +306,10 @@ class Scheduler(object):
                     return video.dictify()
                 else:
                     next_song = session.query(Song).get(next_packet.song_id)
+                    if random_song is None:
+                        # Song was not randomly chosen, so update discard pile
+                        self.update_discard_pile_with_song(
+                            session, next_song.path)
                     player.play_media(next_song)
                     next_song.history.append(
                         PlayHistory(user=next_packet.user,
