@@ -5,6 +5,7 @@ from crossdomain import crossdomain
 from scheduler import Scheduler
 from config import config
 import song
+import playlist
 import player
 import user
 
@@ -195,6 +196,108 @@ def queue_add():
         except Exception, e:
             return jsonify({'message': str(e)}), 400
     return jsonify({'message': 'No id or url parameter'}), 400
+
+@app.route('/v1/playlists/<int:playlist_id>', methods=['GET'])
+@crossdomain(origin='*')
+def get_playlist(playlist_id):
+    try:
+        return jsonify(playlist.get_playlist(playlist_id))
+    except AttributeError:
+        return jsonify({'message': 'Playlist does not exist'}), 400
+
+@app.route('/v1/playlists/<int:playlist_id>/add_song', methods=['POST'])
+@crossdomain(origin='*')
+def add_song_to_playlist(playlist_id):
+    token = request.form.get('token')
+    if not AUTHENTICATION_ENABLED:
+        username = TEST_USERNAME
+    else:
+        session = user.get_session(token)
+        username = session.json()['user']['name']
+    if request.form.get('id'):
+        song_id = request.form.get('id')
+        try:
+            return jsonify(playlist.add_song_to_playlist(username, playlist_id, song_id))
+        except Exception, e:
+            return jsonify({'message': str(e)}), 400
+    return jsonify({'message': 'No id parameter'}), 400
+
+@app.route('/v1/playlists/<int:playlist_id>/remove_song', methods=['POST'])
+@crossdomain(origin='*')
+def remove_song_from_playlist(playlist_id):
+    token = request.form.get('token')
+    if not AUTHENTICATION_ENABLED:
+        username = TEST_USERNAME
+    else:
+        session = user.get_session(token)
+        username = session.json()['user']['name']
+    if request.form.get('index'):
+        index = request.form.get('index')
+        try:
+            return jsonify(playlist.remove_song_from_playlist(username, playlist_id, index))
+        except Exception, e:
+            return jsonify({'message': str(e)}), 400
+    return jsonify({'message': 'No index parameter'}), 400
+
+@app.route('/v1/playlists/<int:playlist_id>/move_song', methods=['POST'])
+@crossdomain(origin='*')
+def move_song_index(playlist_id):
+    token = request.form.get('token')
+    if not AUTHENTICATION_ENABLED:
+        username = TEST_USERNAME
+    else:
+        session = user.get_session(token)
+        username = session.json()['user']['name']
+    if request.form.get('a') and request.form.get('b'):
+        a = request.form.get('a')
+        b = request.form.get('b')
+        return jsonify(playlist.move_song_index(username, playlist_id, a, b))
+    return jsonify({'message': 'No songs specified'}), 400
+
+@app.route('/v1/playlists', methods=['GET'])
+@crossdomain(origin='*')
+def get_playlists_for_user():
+    if request.args.get('user'):
+        username = request.args.get('user')
+        return jsonify(playlist.get_playlists_for_user(username))
+    return jsonify({'message': 'No user specified'}), 400
+
+
+@app.route('/v1/playlists/add', methods=['POST'])
+@crossdomain(origin='*')
+def create_playlist():
+    token = request.form.get('token')
+    if not AUTHENTICATION_ENABLED:
+        username = TEST_USERNAME
+    else:
+        session = user.get_session(token)
+        username = session.json()['user']['name']
+    if request.form.get('name'):
+        try:
+            playlist_name = request.form.get('name')
+        except ValueError:
+            return jsonify({'message': 'Invalid id'}), 400
+        try:
+            return jsonify(playlist.create_playlist(username, playlist_name))
+        except Exception, e:
+            return jsonify({'message': str(e)}), 400
+    return jsonify({'message': 'No name parameter'}), 400
+
+
+@app.route('/v1/playlists/<int:playlist_id>/delete', methods=['POST'])
+@crossdomain(origin='*')
+def delete_playlist(playlist_id):
+    token = request.form.get('token')
+    if not AUTHENTICATION_ENABLED:
+        username = TEST_USERNAME
+    else:
+        session = user.get_session(token)
+        username = session.json()['user']['name']
+    try:
+        return jsonify(playlist.delete_playlist(username, playlist_id))
+    except Exception, e:
+        return jsonify({'message': str(e)}), 400
+    return jsonify({'message': 'No id parameter'}), 400
 
 
 @app.route('/v1/now_playing', methods=['GET'])

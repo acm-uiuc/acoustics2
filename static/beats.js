@@ -211,7 +211,7 @@ function($scope, $http, $interval, $cookies)
     // Data
     //
 
-    var backendBase = '/beats/1104'
+    var backendBase = '';
     var authentication = true;
 
     $scope.showLoginDialog = false;
@@ -219,11 +219,14 @@ function($scope, $http, $interval, $cookies)
     $scope.formPassword = '';
     $scope.showYouTubeDialog = false;
     $scope.formYouTubeURL = '';
+    $scope.showPlaylistDialog = false;
+    $scope.formPlaylistName = '';
 
     $scope.loggedIn = null;
     $scope.playlist = [];
     $scope.albumlist = [];
     $scope.queue = [];
+    $scope.currentPlaylist = null;
     $scope.volume = 0;
     $scope.holdVolumeUpdate = false;
     $scope.playbackTime = 0;
@@ -241,14 +244,7 @@ function($scope, $http, $interval, $cookies)
         { title: 'Top 50', icon: '\uf01b', query: 'top-songs:50' },
     ];
 
-    $scope.playlists =
-    [
-        { title: 'Rock' },
-        { title: 'Pop' },
-        { title: 'Top 40' },
-        { title: 'Hardcore' },
-        { title: 'Witch-Hop' },
-    ];
+    $scope.playlists = [];
 
     //
     // Utility Functions
@@ -320,7 +316,7 @@ function($scope, $http, $interval, $cookies)
 
     $scope.isShowingDialog = function()
     {
-        return $scope.showLoginDialog || $scope.showYouTubeDialog || !!$scope.errorMessage;
+        return $scope.showLoginDialog || $scope.showYouTubeDialog || $scope.showPlaylistDialog || !!$scope.errorMessage;
     };
 
     $scope.startYouTubeDialog = function()
@@ -338,6 +334,23 @@ function($scope, $http, $interval, $cookies)
     {
         $scope.showYouTubeDialog = false;
     };
+
+    $scope.startPlaylistDialog = function()
+    {
+        if (!$scope.ensureLogin())
+        {
+            return;
+        }
+        $scope.formPlaylistName = '';
+        $scope.showPlaylistDialog = true;
+        $scope.playlistFocus = true;
+    }
+
+    $scope.hidePlaylistDialog = function()
+    {
+        $scope.formPlaylistName = '';
+        $scope.showPlaylistDialog = false;
+    }
 
     $scope.hideLoginDialog = function()
     {
@@ -374,7 +387,45 @@ function($scope, $http, $interval, $cookies)
     $scope.addToPlayList = function(playlist, song)
     {
         // Add the song to the given playlist
-        console.log(playlist.title + ' <- ' + song.title);
+        console.log(playlist.name + ' <- ' + song.title);
+
+        $scope.userRequest("/v1/playlists/" + playlist.id + "/add_song", "id=" + song.id );
+    };
+
+    $scope.removeFromPlaylist = function(index)
+    {
+        if(!$scope.currentPlaylist) {
+            return;
+        }
+        if($scope.userRequest("/v1/playlists/" + $scope.currentPlaylist.id + "/remove_song", "index=" + index )) {
+            $scope.playlist.splice(index, 1);
+        }
+    };
+
+    $scope.deleteCurrentPlaylist = function(playlist) {
+        if(!$scope.currentPlaylist) {
+            return;
+        }
+        $scope.userRequest("/v1/playlists/" + $scope.currentPlaylist.id + "/delete");
+        $scope.randomSongs();
+    };
+
+    $scope.moveSong = function(first, second) {
+        if(!$scope.loggedIn || !$scope.currentPlaylist || $scope.currentPlaylist.user != $scope.loggedIn.name) {
+            return;
+        }
+        $scope.userRequest("/v1/playlists/" + $scope.currentPlaylist.id + "/move_song", "a=" + first + "&b=" + second )
+        Array.prototype.move = function (old_index, new_index) {
+        if (new_index >= this.length) {
+                var k = new_index - this.length;
+                while ((k--) + 1) {
+                    this.push(undefined);
+                }
+            }
+            this.splice(new_index, 0, this.splice(old_index, 1)[0]);
+            return this; // for testing purposes
+        };
+        $scope.playlist.move(first, second);
     };
 
     //
@@ -505,6 +556,7 @@ function($scope, $http, $interval, $cookies)
                 }
                 $scope.albumlist = albums;
                 $scope.layout = 'albumgrid';
+                $scope.currentPlaylist = null;
                 $scope.searchText = query;
             }
             else
@@ -517,6 +569,7 @@ function($scope, $http, $interval, $cookies)
                 }
                 $scope.playlist = songs;
                 $scope.layout = 'songlist';
+                $scope.currentPlaylist = null;
                 $scope.searchText = query;
             }
         });
@@ -535,9 +588,57 @@ function($scope, $http, $interval, $cookies)
             }
             $scope.playlist = songs;
             $scope.layout = 'songlist';
+            $scope.currentPlaylist = null;
             $scope.searchText = '';
         });
     }
+
+    $scope.loadPlaylist = function(playlist)
+    {
+        var params = {};
+        params['user'] = $scope.loggedIn['name'];
+        $http.get(backendBase + '/v1/playlists/' + playlist.id,
+        {
+            params: params
+        })
+        .success(function(data)
+        {
+            var songs = [];
+            for (var resultIndex = 0; resultIndex < data.songs.length; resultIndex++)
+            {
+                var result = data.songs[resultIndex];
+                songs[resultIndex] = result;
+                songs[resultIndex].order = resultIndex;
+            }
+            $scope.playlist = songs;
+            $scope.layout = 'playlist';
+            $scope.currentPlaylist = data;
+            $scope.searchText = '';
+        });
+    };
+
+    $scope.refreshPlaylists = function()
+    {
+        if(!$scope.loggedIn) {
+            return;
+        }
+        var params = {};
+        params['user'] = $scope.loggedIn['name'];
+        $http.get(backendBase + '/v1/playlists',
+        {
+            params: params
+        })
+        .success(function(data)
+        {
+            var playlists = [];
+            for (var resultIndex = 0; resultIndex < data.playlists.length; resultIndex++)
+            {
+                var result = data.playlists[resultIndex];
+                playlists[resultIndex] = result;
+            }
+            $scope.playlists = playlists;
+        });
+    };
 
     $scope.voteSong = function(song)
     {
@@ -570,6 +671,17 @@ function($scope, $http, $interval, $cookies)
         $scope.userRequest('/v1/queue/add', 'url=' + encodeURIComponent(url));
 
     };
+
+    $scope.createPlaylist = function(name)
+    {
+        $scope.hidePlaylistDialog();
+        if (!$scope.ensureLogin()) {
+            return;
+        }
+
+        $scope.userRequest('/v1/playlists/add', 'name=' + encodeURIComponent(name));
+    };
+
 
     $scope.pauseSong = function()
     {
@@ -612,6 +724,11 @@ function($scope, $http, $interval, $cookies)
         if ($scope.loggedIn)
         {
             params['user'] = $scope.loggedIn['name'];
+            $scope.refreshPlaylists();
+        }
+        else
+        {
+            $scope.playlists = [];
         }
         $http.get(backendBase + '/v1/queue',
         {

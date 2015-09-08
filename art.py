@@ -69,7 +69,6 @@ def write_art(song, data):
 
     image_type = imghdr.what(None, data)
     ext = ''
-
     if image_type == 'jpeg':
         ext = '.jpg'
     elif image_type == 'png':
@@ -82,14 +81,14 @@ def write_art(song, data):
     out.write(data)
     out.close()
 
-
 def get_art(artist, album):
     if not album or not artist:
         return None
-    ext = ['.jpg', '.png']
 
     name = u"{0} - {1}".format(artist, album)
     folder = sanitize_folder_name(name)
+    ext = ['.jpg', '.png']
+
 
     for e in ext:
         if path.isfile('.' + ART_DIR + folder + e):
