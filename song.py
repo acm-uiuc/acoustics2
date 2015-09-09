@@ -63,14 +63,14 @@ def _prune_dir(path, prune_modified=False):
     return remaining_paths
 
 
-def add_songs_in_dir(path, store_checksum=True):
+def add_songs_in_dir(path, store_checksum=False):
     """Update database to reflect the contents of the given directory.
 
     store_checksum: Whether or not to store an MD5 file checksum in order to
     update the song metadata in the database if the file is modified. Disabled
     by default because it makes scanning a lot slower.
     """
-    already_added = _prune_dir(unicode(path), prune_modified=store_checksum)
+    already_added = _prune_dir(path, prune_modified=store_checksum)
     table = Song.__table__
     conn = engine.connect()
     num_songs = 0
@@ -119,8 +119,6 @@ def add_songs_in_dir(path, store_checksum=True):
                 if store_checksum:
                     with open(filepath, 'rb') as song_file:
                         song_obj['checksum'] = md5_for_file(song_file)
-                else:
-                    song_obj['checksum'] = None
 
                 try: # Album optional for singles
                     if ext in {'.m4a', '.mp4'}:
@@ -130,7 +128,7 @@ def add_songs_in_dir(path, store_checksum=True):
                 except Exception:
                     song_obj['album'] = None
 
-                try:  # Track number optional
+                try: # Track number optional
                     if ext in {'.m4a', '.mp4'}:
                         song_obj['tracknumber'] = song.tags['trkn'][0][0]
                     else:
@@ -150,6 +148,76 @@ def add_songs_in_dir(path, store_checksum=True):
     conn.close()
     return num_songs
 
+def recover_art(path):
+    """Recovers missing artwork for songs already in database.
+
+    Useful for disaster recovery.
+    """
+    table = Song.__table__
+    conn = engine.connect()
+    num_songs = 0
+    for root, _, files in walk(path):
+        for f in files:
+            ext = splitext(f)[1]
+            filepath = join(root, f).decode('utf-8')
+            if ext in {'.mp3', '.flac', '.ogg', '.m4a', '.mp4'}:
+                try:
+                    if ext == '.mp3':
+                        song = EasyMP3(filepath)
+                    elif ext == '.flac':
+                        song = FLAC(filepath)
+                    elif ext == '.ogg':
+                        song = OggVorbis(filepath)
+                    elif ext in {'.m4a', '.mp4'}:
+                        song = MP4(filepath)
+                except IOError, e:
+                    print e
+                    continue
+
+                # Required tags
+                try:
+                    if ext in {'.m4a', '.mp4'}:
+                        title = song.tags['\xa9nam'][0]
+                        artist = song.tags['\xa9ART'][0]
+                    else:
+                        title = song.tags['title'][0]
+                        artist = song.tags['artist'][0]
+                except Exception:
+                    print 'Missing tags: ' + filepath
+                    continue
+
+                song_obj = {
+                    'title': title,
+                    'artist': artist,
+                    'length': song.info.length,
+                    'path': filepath,
+                }
+
+                try: # Album optional for singles
+                    if ext in {'.m4a', '.mp4'}:
+                        song_obj['album'] = song.tags['\xa9alb'][0]
+                    else:
+                        song_obj['album'] = song.tags['album'][0]
+                except Exception:
+                    song_obj['album'] = None
+
+                try: # Track number optional
+                    if ext in {'.m4a', '.mp4'}:
+                        song_obj['tracknumber'] = song.tags['trkn'][0][0]
+                    else:
+                        song_obj['tracknumber'] = (
+                            int(song.tags['tracknumber'][0]))
+                except Exception:
+                    song_obj['tracknumber'] = None
+
+                # Album art added on indexing
+                if not art.get_art(song_obj['artist'], song_obj['album']):
+                    art.index_art(song_obj)
+                    print 'Recovered artwork for: ' + filepath
+                    num_songs += 1
+
+    conn.close()
+    return num_songs
 
 def search_songs(query, limit=20):
     songs = []
