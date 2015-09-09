@@ -135,6 +135,17 @@ Source: https://github.com/acm-uiuc/beats
           </button>
         </form>
       </div>
+      <div class="dialog-area top" ng-show="showPlaylistDialog">
+        <form ng-submit="createPlaylist(name)">
+          <input name="name" placeholder="Playlist Name" ng-model="formPlaylistName" take-focus="playlistFocus" required />
+          <button type="button" class="cancel" title="Cancel" ng-click="hidePlaylistDialog()">
+            <span data-icon="&#xf00d;"></span>Cancel
+          </button>
+          <button type="submit" class="confirm" title="Login">
+            <span data-icon="&#xf090;"></span>Login
+          </button>
+        </form>
+      </div>
     </div>
     <div class="main-container">
       <div class="top-area">
@@ -146,6 +157,9 @@ Source: https://github.com/acm-uiuc/beats
         <button class="control rect-button" title="Logout" ng-click="logout()" ng-show="loggedIn"><span data-icon="&#xf08b;"></span>Logout: {{ loggedIn['first-name'] }}</button>
         <button class="control rect-button" title="Login" ng-click="ensureLogin()" ng-show="!loggedIn">
           <span data-icon="&#xf090;"></span>Login
+        </button>
+        <button class="control rect-button" title="Add Playlist" ng-click="startPlaylistDialog()">
+          <span data-icon="&#xf090;"></span>Add Playlist
         </button>
         <img src="static/icon.png">
       </div>
