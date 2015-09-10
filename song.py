@@ -99,19 +99,15 @@ def add_songs_in_dir(path, store_checksum=False):
                 # Required tags
                 try:
                     if ext in {'.m4a', '.mp4'}:
-                        title = song.tags['\xa9nam'][0]
                         artist = song.tags['\xa9ART'][0]
                     else:
-                        title = song.tags['title'][0]
                         artist = song.tags['artist'][0]
                 except Exception:
                     print 'Missing tags: ' + filepath
                     continue
 
                 song_obj = {
-                    'title': title,
                     'artist': artist,
-                    'length': song.info.length,
                     'path': filepath,
                 }
 
