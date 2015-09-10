@@ -153,8 +153,6 @@ def recover_art(path):
 
     Useful for disaster recovery.
     """
-    table = Song.__table__
-    conn = engine.connect()
     num_songs = 0
     for root, _, files in walk(path):
         for f in files:
@@ -189,7 +187,6 @@ def recover_art(path):
                 song_obj = {
                     'title': title,
                     'artist': artist,
-                    'length': song.info.length,
                     'path': filepath,
                 }
 
@@ -201,22 +198,12 @@ def recover_art(path):
                 except Exception:
                     song_obj['album'] = None
 
-                try: # Track number optional
-                    if ext in {'.m4a', '.mp4'}:
-                        song_obj['tracknumber'] = song.tags['trkn'][0][0]
-                    else:
-                        song_obj['tracknumber'] = (
-                            int(song.tags['tracknumber'][0]))
-                except Exception:
-                    song_obj['tracknumber'] = None
-
                 # Album art added on indexing
-                if not art.get_art(song_obj['artist'], song_obj['album']):
+                if not art.get_art(title, artist):
                     art.index_art(song_obj)
                     print 'Recovered artwork for: ' + filepath
                     num_songs += 1
 
-    conn.close()
     return num_songs
 
 def search_songs(query, limit=20):
