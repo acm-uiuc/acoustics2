@@ -199,7 +199,7 @@ def recover_art(path):
                     song_obj['album'] = None
 
                 # Album art added on indexing
-                if not art.get_art(title, artist):
+                if not art.get_art(song_obj['artist'], song_obj['album']):
                     art.index_art(song_obj)
                     print 'Recovered artwork for: ' + filepath
                     num_songs += 1
