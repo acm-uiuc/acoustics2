@@ -46,3 +46,5 @@ static/art
 .idea
 .sass-cache
 alembic/
+
+*.orig
