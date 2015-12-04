@@ -13,7 +13,7 @@ def get_youtube_video_details(url):
     except IndexError:
         raise Exception('Invalid video, potentially live stream')
 
-    youtube_id = parse_qs(urlparse(url).query)['v'][0]
+    youtube_id = video.videoid
     art_uri = 'https://img.youtube.com/vi/' + youtube_id + '/hqdefault.jpg'
 
     return {'title': video.title, 'length': video.length, 'stream_id': youtube_id, 'art_uri': art_uri}
