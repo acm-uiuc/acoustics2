@@ -64,7 +64,7 @@ class Scheduler(object):
             self._update_finish_times(packet.user)
         else:  # Song is not queued; queue it
             if stream_url:
-                if 'www.youtube.com' in stream_url:
+                if ('www.youtube.com' in stream_url) or ('youtu.be' in stream_url):
                     try:
                         video_details = get_youtube_video_details(stream_url)
                         packet = Packet(stream_url=stream_url,
