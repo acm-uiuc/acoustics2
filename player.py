@@ -179,7 +179,7 @@ def is_youtube_video(m=None):
     if m is None:
         m = player.get_media()
     mrl = vlc.bytes_to_str(m.get_mrl())
-    return m is not None and 'http://www.youtube.com' in mrl
+    return m is not None and (mrl.startswith('http://www.youtube.com') or mrl.startswith('https://www.youtube.com'))
 
 
 def get_vlc_version():
