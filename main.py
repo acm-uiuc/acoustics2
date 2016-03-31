@@ -5,6 +5,7 @@ from crossdomain import crossdomain
 from scheduler import Scheduler
 from config import config
 import song
+import chroma
 import player
 import user
 import audit_log
@@ -315,6 +316,16 @@ def queue_add():
 @crossdomain(origin='*')
 def now_playing():
     return jsonify(player.get_now_playing() or {})
+
+
+@app.route('/v1/chroma/switch', methods=['POST'])
+@login_required
+@crossdomain(origin='*')
+def switch_animation():
+    if request.form.get('anim'):
+        anim = int(request.form.get('anim'))
+        return jsonify(chroma.switch_animation(anim))
+    return jsonify({'message': 'No anim parameter'}), 400
 
 
 @app.route('/v1/session', methods=['POST'])
