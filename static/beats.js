@@ -406,7 +406,8 @@ function($scope, $http, $interval, $cookies)
     // Data
     //
 
-    var backendBase = '/beats/1104'
+    var backendBase = '/beats/1104';
+    var chromaBase = 'siebl-1104-07.acm.illinois.edu:8000'
     var authentication = true;
 
     $scope.showLoginDialog = false;
@@ -419,6 +420,7 @@ function($scope, $http, $interval, $cookies)
     $scope.loggedIn = null;
     $scope.playlist = [];
     $scope.albumlist = [];
+    $scope.chromaList = [];
     $scope.queue = [];
     $scope.volume = 0;
     $scope.eqSupported = false;
@@ -701,6 +703,24 @@ function($scope, $http, $interval, $cookies)
         }
     }
 
+    $scope.getChromaAnimations = function()
+    {
+        $http.get('http://' + chromaBase + '/list')
+        .success(function(data)
+        {
+            $scope.chromaList = data.effects;
+        });
+    }
+
+    $scope.switchChromaAnimation = function(id)
+    {
+        $scope.userRequest(backendBase + '/v1/chroma/switch', 'anim=' + id)
+        .success(function(data)
+        {
+            console.log(data);
+        });
+    }
+
     $scope.searchSongs = function(query)
     {
         if (!query) {
@@ -970,6 +990,8 @@ function($scope, $http, $interval, $cookies)
     $scope.randomSongs();
     $scope.getEqualizerInfo();
     $scope.refreshPlayer();
+
+    $scope.getChromaAnimations();
 }]);
 
 // Print banner
