@@ -147,6 +147,14 @@ Source: https://github.com/acm-uiuc/beats
         </form>
       </div>
     </div>
+
+    <div class="cbp-spmenu-push">
+      <nav class="cbp-spmenu cbp-spmenu-vertical cbp-spmenu-right" id="cbp-spmenu-s2">
+        <h3>Menu</h3>
+        <a href="#" ng-repeat="anim in chromaList" ng-click="switchChromaAnimation(anim.id)">{{ anim.name }}</a>
+      </nav>
+    </div> 
+
     <div class="main-container">
       <div class="top-area">
         <div class="control label large" title="Search" data-image-icon="&#xf002;"></div>
@@ -161,9 +169,14 @@ Source: https://github.com/acm-uiuc/beats
         <button class="control rect-button" title="Add Playlist" ng-click="startPlaylistDialog()">
           <span data-icon="&#xf090;"></span>Add Playlist
         </button>
+        <button id="showRight" class="control rect-button" title="Add Playlist">
+          <span data-icon="&#xf090;"></span>Chroma
+        </button>
         <img src="static/icon.png">
+
       </div>
       <div class="middle-area">
+
         <div class="side-area">
           <div class="playlists">
             <ul>
@@ -269,8 +282,27 @@ Source: https://github.com/acm-uiuc/beats
         <div class="control label duration-label" title="Track">{{ playbackDuration|momentFormat }}</div>
       </div>
     </div>
+    
     <script src="static/angular.min.js"></script>
     <script src="static/angular-cookies.min.js"></script>
     <script src="static/beats.js"></script>
+    <script src="static/classie.js"></script>
+    <script>
+     var menuRight = document.getElementById( 'cbp-spmenu-s2' ),
+         showRight = document.getElementById( 'showRight' ),
+         body = document.body;
+
+     showRight.onclick = function() {
+         classie.toggle( this, 'active' );
+         classie.toggle( menuRight, 'cbp-spmenu-open' );
+         disableOther( 'showRight' );
+     };
+
+     function disableOther( button ) {
+         if( button !== 'showRight' ) {
+             classie.toggle( showRight, 'disabled' );
+         }
+     }
+    </script>
   </body>
 </html>

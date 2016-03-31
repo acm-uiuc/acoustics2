@@ -406,7 +406,7 @@ function($scope, $http, $interval, $cookies)
     // Data
     //
 
-    var backendBase = '/beats/1104';
+    var backendBase = '';
     var authentication = true;
 
     $scope.showLoginDialog = false;
@@ -419,6 +419,7 @@ function($scope, $http, $interval, $cookies)
     $scope.loggedIn = null;
     $scope.playlist = [];
     $scope.albumlist = [];
+    $scope.chromaList = [];
     $scope.queue = [];
     $scope.volume = 0;
     $scope.eqSupported = false;
@@ -716,6 +717,30 @@ function($scope, $http, $interval, $cookies)
         {
             $scope.searchSongs('album:' + album);
         }
+    }
+
+    $scope.getChromaAnimations = function()
+    {
+        $http.get('http://localhost:8000/list')
+        .success(function(data)
+        {
+            $scope.chromaList = data.effects;
+        });
+    }
+
+    $scope.switchChromaAnimation = function(id) {
+        if (!id) {
+            return;
+        }
+        // $scope.userRequest(backendBase + '/v1/chroma/switch', 'anim=' + id);
+        $http.post(backendBase + '/v1/chroma/switch', "anim=" + id,
+        {
+            headers: { 'Content-Type': 'application/x-www-form-urlencoded' }
+        })
+        .success(function(data)
+        {
+            console.log(data);
+        });
     }
 
     $scope.searchSongs = function(query)
@@ -1034,6 +1059,8 @@ function($scope, $http, $interval, $cookies)
     $scope.randomSongs();
     $scope.getEqualizerInfo();
     $scope.refreshPlayer();
+
+    $scope.getChromaAnimations();
 }]);
 
 // Print banner

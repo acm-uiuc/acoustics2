@@ -5,7 +5,8 @@ from crossdomain import crossdomain
 from scheduler import Scheduler
 from config import config
 import song
-import playlist
+# import playlist
+import chroma
 import player
 import user
 
@@ -281,50 +282,60 @@ def queue_add():
     return jsonify({'message': 'No id or url parameter'}), 400
 
 
-@app.route('/v1/playlists/<int:playlist_id>', methods=['GET'])
-@crossdomain(origin='*')
-def get_playlist(playlist_id):
-    try:
-        return jsonify(playlist.get_playlist(playlist_id))
-    except AttributeError:
-        return jsonify({'message': 'Playlist does not exist'}), 400
+# @app.route('/v1/playlists/<int:playlist_id>', methods=['GET'])
+# @crossdomain(origin='*')
+# def get_playlist(playlist_id):
+#     try:
+#         return jsonify(playlist.get_playlist(playlist_id))
+#     except AttributeError:
+#         return jsonify({'message': 'Playlist does not exist'}), 400
 
 
-@app.route('/v1/playlists', methods=['GET'])
-@crossdomain(origin='*')
-def get_playlists_for_user():
-    username = request.args.get('user')
-    if username:
-        return jsonify(playlist.get_playlists_for_user(username))
-    else:
-        return jsonify({'message': 'No user specified'}), 400
+# @app.route('/v1/playlists', methods=['GET'])
+# @crossdomain(origin='*')
+# def get_playlists_for_user():
+#     username = request.args.get('user')
+#     if username:
+#         return jsonify(playlist.get_playlists_for_user(username))
+#     else:
+#         return jsonify({'message': 'No user specified'}), 400
 
 
-@app.route('/v1/playlists/add', methods=['POST'])
-@crossdomain(origin='*')
-def create_playlist():
-    token = request.form.get('token')
-    if not AUTHENTICATION_ENABLED:
-        username = TEST_USERNAME
-    else:
-        session = user.get_session(token)
-        username = session.json()['user']['name']
-    if request.form.get('name'):
-        try:
-            playlist_name = request.form.get('name')
-        except ValueError:
-            return jsonify({'message': 'Invalid id'}), 400
-        try:
-            return jsonify(playlist.create_playlist(username, playlist_name))
-        except Exception, e:
-            return jsonify({'message': str(e)}), 400
-    return jsonify({'message': 'No name parameter'}), 400
+# @app.route('/v1/playlists/add', methods=['POST'])
+# @crossdomain(origin='*')
+# def create_playlist():
+#     token = request.form.get('token')
+#     if not AUTHENTICATION_ENABLED:
+#         username = TEST_USERNAME
+#     else:
+#         session = user.get_session(token)
+#         username = session.json()['user']['name']
+#     if request.form.get('name'):
+#         try:
+#             playlist_name = request.form.get('name')
+#         except ValueError:
+#             return jsonify({'message': 'Invalid id'}), 400
+#         try:
+#             return jsonify(playlist.create_playlist(username, playlist_name))
+#         except Exception, e:
+#             return jsonify({'message': str(e)}), 400
+#     return jsonify({'message': 'No name parameter'}), 400
 
 
 @app.route('/v1/now_playing', methods=['GET'])
 @crossdomain(origin='*')
 def now_playing():
     return jsonify(player.get_now_playing() or {})
+
+
+@app.route('/v1/chroma/switch', methods=['POST'])
+# @login_required
+@crossdomain(origin='*')
+def switch_animation():
+    if request.form.get('anim'):
+        anim = int(request.form.get('anim'))
+        return jsonify(chroma.switch_animation(anim))
+    return jsonify({'message': 'No anim parameter'}), 400
 
 
 @app.route('/v1/session', methods=['POST'])
