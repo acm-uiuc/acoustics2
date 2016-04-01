@@ -729,9 +729,6 @@ function($scope, $http, $interval, $cookies)
     }
 
     $scope.switchChromaAnimation = function(id) {
-        if (!id) {
-            return;
-        }
         // $scope.userRequest(backendBase + '/v1/chroma/switch', 'anim=' + id);
         $http.post(backendBase + '/v1/chroma/switch', "anim=" + id,
         {

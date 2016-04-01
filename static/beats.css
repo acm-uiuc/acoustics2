@@ -413,34 +413,6 @@ table.playlist {
     margin-right: 16px; }
 
 /*# sourceMappingURL=beats.css.map */
-.slideout-menu {
-  position: fixed;
-  left: auto;
-  top: 0;
-  bottom: 0;
-  right: 0;
-  z-index: 0;
-  width: 256px;
-  overflow-y: auto;
-  -webkit-overflow-scrolling: touch;
-  display: none;
-}
-
-.slideout-panel {
-  position:relative;
-  z-index: 1;
-  will-change: transform;
-}
-
-.slideout-open,
-.slideout-open body,
-.slideout-open .slideout-panel {
-  overflow: hidden;
-}
-
-.slideout-open .slideout-menu {
-  display: block;
-}
 
 .cbp-spmenu,
 .cbp-spmenu-push {
@@ -452,33 +424,39 @@ table.playlist {
 /* General styles for all menus */
 
 .cbp-spmenu {
-	background: #47a3da;
+        background-color: #444;
 	position: fixed;
 }
 
 .cbp-spmenu h3 {
-	color: #afdefa;
-	font-size: 1.9em;
-	padding: 20px;
+        color: #fff;
+	font-size: 18px;
+	padding: 26px;
 	margin: 0;
 	font-weight: 300;
-	background: #0d77b6;
+	background: #333;
 }
 
 .cbp-spmenu a {
 	display: block;
 	color: #fff;
-	font-size: 1.1em;
-	font-weight: 300;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+        color: white;
+        cursor: default;
+        font-family: 'Open Sans';
+        font-size: 14px;
+        font-weight: 300;
+        line-height: 20px;
+        text-decoration: none;
 }
 
 .cbp-spmenu a:hover {
-	background: #258ecd;
+        background: #448AA6;
 }
 
 .cbp-spmenu a:active {
-	background: #afdefa;
-	color: #47a3da;
+        background: #9dc6d7;
 }
 
 /* Orientation-dependent styles for the content of the menu */
@@ -491,8 +469,12 @@ table.playlist {
         overflow-y: auto;
 }
 
+.cbp-spmenu-vertical::-webkit-scrollbar { 
+    display: none; 
+}
+
 .cbp-spmenu-vertical a {
-	border-bottom: 1px solid #258ecd;
+        border-bottom: 1px solid #666;
 	padding: 1em;
 }
 
