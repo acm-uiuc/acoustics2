@@ -406,7 +406,10 @@ function($scope, $http, $interval, $cookies)
     // Data
     //
 
-    var backendBase = '';
+    var backendBase = '/beats/1104';
+    // var backendBase = '';
+    var chromaBase = 'siebl-1104-07.acm.illinois.edu:8000'
+    // var chromaBase = 'localhost:8000'
     var authentication = true;
 
     $scope.showLoginDialog = false;
@@ -721,19 +724,16 @@ function($scope, $http, $interval, $cookies)
 
     $scope.getChromaAnimations = function()
     {
-        $http.get('http://localhost:8000/list')
+        $http.get('http://' + chromaBase + '/list')
         .success(function(data)
         {
             $scope.chromaList = data.effects;
         });
     }
 
-    $scope.switchChromaAnimation = function(id) {
-        // $scope.userRequest(backendBase + '/v1/chroma/switch', 'anim=' + id);
-        $http.post(backendBase + '/v1/chroma/switch', "anim=" + id,
-        {
-            headers: { 'Content-Type': 'application/x-www-form-urlencoded' }
-        })
+    $scope.switchChromaAnimation = function(id)
+    {
+        $scope.userRequest(backendBase + '/v1/chroma/switch', 'anim=' + id)
         .success(function(data)
         {
             console.log(data);

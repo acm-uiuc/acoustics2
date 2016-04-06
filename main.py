@@ -329,7 +329,7 @@ def now_playing():
 
 
 @app.route('/v1/chroma/switch', methods=['POST'])
-# @login_required
+@login_required
 @crossdomain(origin='*')
 def switch_animation():
     if request.form.get('anim'):
