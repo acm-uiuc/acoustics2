@@ -136,6 +136,14 @@ Source: https://github.com/acm-uiuc/beats
         </form>
       </div>
     </div>
+
+    <div class="cbp-spmenu-push">
+      <nav class="cbp-spmenu cbp-spmenu-vertical cbp-spmenu-right" id="cbp-spmenu-s2">
+        <h3>Chroma</h3>
+        <a href="#" ng-repeat="anim in chromaList" ng-click="switchChromaAnimation(anim.id)">{{ anim.name }}</a>
+      </nav>
+    </div> 
+
     <div class="main-container">
       <div class="top-area">
         <div class="control label large" title="Search" data-image-icon="&#xf002;"></div>
@@ -147,6 +155,9 @@ Source: https://github.com/acm-uiuc/beats
         <button class="control rect-button" title="Login" ng-click="ensureLogin()" ng-show="!loggedIn">
           <span data-icon="&#xf090;"></span>Login
         </button>
+        <button id="showRight" class="control rect-button" title="Chroma" ng-show="loggedIn">
+          <span data-icon="&#xf185;"></span>Chroma
+        </button>
         <img src="static/icon.png">
       </div>
       <div class="middle-area">
@@ -156,9 +167,6 @@ Source: https://github.com/acm-uiuc/beats
                 <li ng-repeat="section in sections" ng-click="searchSongs(section.query)"><span data-icon="{{ section.icon }}"></span>{{ section.title }}</li>
             </ul>
             <hr />
-            <ul class="playlists">
-              <li ng-repeat="playlist in playlists" drop-song="addToPlayList(playlist, song)"><span data-icon="&#xf001;"></span>{{ playlist.title }}</li>
-            </ul>
           </div>
         </div>
 
@@ -195,7 +203,7 @@ Source: https://github.com/acm-uiuc/beats
             <p class="album-name" title="{{ [album.name,'No Album'][(album.name == null) ? 1 : 0] }}">{{[album.name,"No Album"][(album.name == null) ? 1 : 0] }}</p>
           </li>
         </ul>
-        <div class="queue-area" drop-song="voteSong(song)">
+        <div id="queue" class="queue-area" drop-song="voteSong(song)">
           <div class="album-art">
             <img ng-src="{{queue[0].art_uri || defaultAlbumArt}}" />
           </div>
@@ -258,5 +266,25 @@ Source: https://github.com/acm-uiuc/beats
     <script src="static/angular.min.js"></script>
     <script src="static/angular-cookies.min.js"></script>
     <script src="static/beats.js"></script>
+    <script src="static/classie.js"></script>
+    <script>
+     var menuRight = document.getElementById( 'cbp-spmenu-s2' ),
+         showRight = document.getElementById( 'showRight' ),
+         queueArea = document.getElementById( 'queue' ),
+         body = document.body;
+
+     showRight.onclick = function() {
+         menuRight.setAttribute("style","width:" + queueArea.scrollWidth + "px");
+         classie.toggle( this, 'active' );
+         classie.toggle( menuRight, 'cbp-spmenu-open' );
+         disableOther( 'showRight' );
+     };
+
+     function disableOther( button ) {
+         if( button !== 'showRight' ) {
+             classie.toggle( showRight, 'disabled' );
+         }
+     }
+    </script>
   </body>
 </html>
